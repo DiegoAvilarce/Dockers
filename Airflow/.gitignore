@@ -1,3 +1,8 @@
 # Ignore Airflow configuration files
 airflow.cfg
 **/airflow.cfg
+
+# Add folder example_dags
+example_dags/
+**/example_dags/
+**latest
