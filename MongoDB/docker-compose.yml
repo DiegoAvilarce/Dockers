@@ -1,0 +1,36 @@
+services:
+  mongo-server:
+    image: mongo:latest
+    container_name: mongo-server
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_ADMIN_USERNAME:-admin_db}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_ADMIN_PASSWORD:-mongodbpass}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - mongodb_network
+
+  mongo-client:
+    image: mongo-express:latest
+    container_name: mongo-client
+    restart: always
+    depends_on:
+      - mongo-server
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo-server
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_DB_ADMIN_USERNAME:-admin_db}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_DB_ADMIN_PASSWORD:-mongodbpass}
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_ADMIN_USERNAME:-admin_express}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_ADMIN_PASSWORD:-mongoexpresspass}
+    ports:
+      - "8081:8081"
+    networks:
+      - mongodb_network
+volumes:
+  mongodb_data:
+networks:
+  mongodb_network:
