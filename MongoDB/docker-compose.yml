@@ -21,6 +21,7 @@ services:
       - mongo-server
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo-server
+      ME_CONFIG_MONGODB_URL: mongodb://mongo-server:27017
       ME_CONFIG_MONGODB_PORT: 27017
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_DB_ADMIN_USERNAME:-admin_db}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_DB_ADMIN_PASSWORD:-mongodbpass}
