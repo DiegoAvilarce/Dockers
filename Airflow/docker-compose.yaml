@@ -100,6 +100,8 @@ services:
       retries: 5
       start_period: 5s
     restart: always
+    networks:
+      - airflow_net
 
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
@@ -114,6 +116,8 @@ services:
       retries: 50
       start_period: 30s
     restart: always
+    networks:
+      - airflow_net
 
   airflow-apiserver:
     <<: *airflow-common
@@ -131,6 +135,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - airflow_net
 
   airflow-scheduler:
     <<: *airflow-common
@@ -146,6 +152,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - airflow_net
 
   airflow-dag-processor:
     <<: *airflow-common
@@ -161,6 +169,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - airflow_net
 
   airflow-worker:
     <<: *airflow-common
@@ -186,6 +196,8 @@ services:
         condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - airflow_net
 
   airflow-triggerer:
     <<: *airflow-common
@@ -201,6 +213,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - airflow_net
 
   airflow-init:
     <<: *airflow-common
@@ -293,6 +307,8 @@ services:
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
+    networks:
+      - airflow_net
 
   airflow-cli:
     <<: *airflow-common
@@ -308,6 +324,8 @@ services:
       - airflow
     depends_on:
       <<: *airflow-common-depends-on
+    networks:
+      - airflow_net
 
   # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
@@ -330,26 +348,13 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-
-  # @davila 23-06-2025: Agrego CloudBeaver para poder conectarme a la base de datos de Airflow
-  cloudbeaver:
-    image: dbeaver/cloudbeaver:latest
-    container_name: cloudbeaver
-    restart: always
-    ports:
-      - "8978:8978"
-    volumes:
-      - cloudbeaver_data:/opt/cloudbeaver/workspace
-    environment:
-      CB_SERVER_NAME: CloudBeaver
-      CB_ADMIN_NAME: ${CB_ADMIN_NAME}
-      CB_ADMIN_PASSWORD: ${CB_ADMIN_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
+    networks:
+      - airflow_net
 
 volumes:
-  cloudbeaver_data:
-    driver: local
   postgres-db-volume:
 
+networks:
+  airflow_net:
+    driver: bridge
+    name: cloudbeaver_airflow_net
