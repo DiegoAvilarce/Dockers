@@ -1,6 +1,6 @@
 # 🐳 Repositorio Docker
 
-Este repositorio contiene configuraciones Docker para servicios de datos y análisis, incluyendo Apache Airflow y CloudBeaver para gestión de bases de datos.
+Este repositorio contiene configuraciones Docker para servicios de datos y análisis, incluyendo Apache Airflow, CloudBeaver para gestión de bases de datos y MongoDB con Mongo Express.
 
 ## 📋 Tabla de Contenidos
 
@@ -9,6 +9,7 @@ Este repositorio contiene configuraciones Docker para servicios de datos y anál
 - [Instalación y Configuración](#instalación-y-configuración)
 - [Apache Airflow](#apache-airflow)
 - [CloudBeaver](#cloudbeaver)
+- [MongoDB](#mongodb)
 - [Variables de Entorno](#variables-de-entorno)
 - [Uso](#uso)
 - [Troubleshooting](#troubleshooting)
@@ -27,6 +28,13 @@ Este repositorio contiene configuraciones Docker para servicios de datos y anál
 - **Puerto**: 8978
 - **Compatibilidad**: PostgreSQL, MySQL, SQLite y más
 - **Ubicación**: `./CloudBeaver/`
+
+### MongoDB
+- **Descripción**: Base de datos NoSQL orientada a documentos con interfaz web de administración
+- **Puerto MongoDB**: 27017
+- **Puerto Mongo Express**: 8081
+- **Componentes**: MongoDB Server + Mongo Express
+- **Ubicación**: `./MongoDB/`
 
 ## 💻 Requisitos del Sistema
 
@@ -76,6 +84,17 @@ POSTGRES_PASSWORD=testpassword_secure
 # CloudBeaver
 CB_ADMIN_NAME=admin
 CB_ADMIN_PASSWORD=cloudbeaver_password_secure
+```
+
+#### Para MongoDB (`./MongoDB/.env`):
+```env
+# Credenciales de MongoDB
+MONGO_INITDB_ROOT_USERNAME=admin
+MONGO_INITDB_ROOT_PASSWORD=mongo_password_secure
+
+# Usuario administrador de Mongo Express
+ME_CONFIG_BASICAUTH_USERNAME=admin
+ME_CONFIG_BASICAUTH_PASSWORD=mongoexpress_password_secure
 ```
 
 ## 🌬️ Apache Airflow
@@ -139,6 +158,36 @@ CloudBeaver puede conectarse a:
 - PostgreSQL standalone (host: `postgres_db_test`, puerto: 5432)
 - Otras bases de datos externas
 
+## 🐼 MongoDB
+
+### Arquitectura
+- **MongoDB Server**: Base de datos NoSQL
+- **Mongo Express**: Interfaz web para administración de MongoDB
+
+### Iniciar MongoDB
+```bash
+cd MongoDB
+docker-compose up -d
+```
+
+### Acceso
+- **MongoDB**: Conexión desde aplicaciones en `mongodb://admin:mongo_password_secure@localhost:27017`
+- **Mongo Express**: http://localhost:8081
+  - **Usuario**: admin (configurable en .env)
+  - **Contraseña**: mongoexpress_password_secure (configurable en .env)
+
+### Comandos Útiles
+```bash
+# Acceder al contenedor de MongoDB
+docker-compose exec mongo bash
+
+# Ver logs de MongoDB
+docker-compose logs -f mongo
+
+# Ejecutar un cliente de MongoDB
+mongo --username admin --password mongo_password_secure --host localhost --port 27017
+```
+
 ## 🔧 Variables de Entorno
 
 ### Variables Principales de Airflow
@@ -157,6 +206,14 @@ CloudBeaver puede conectarse a:
 | `CB_ADMIN_NAME` | Usuario administrador | admin |
 | `CB_ADMIN_PASSWORD` | Contraseña administrador | - |
 
+### Variables de MongoDB
+| Variable | Descripción | Valor por Defecto |
+|----------|-------------|-------------------|
+| `MONGO_INITDB_ROOT_USERNAME` | Usuario root de MongoDB | admin |
+| `MONGO_INITDB_ROOT_PASSWORD` | Contraseña root de MongoDB | - |
+| `ME_CONFIG_BASICAUTH_USERNAME` | Usuario admin de Mongo Express | admin |
+| `ME_CONFIG_BASICAUTH_PASSWORD` | Contraseña admin de Mongo Express | - |
+
 ## 🚀 Uso
 
 ### Iniciar Todos los Servicios
@@ -166,6 +223,9 @@ cd Airflow && docker-compose up -d
 
 # CloudBeaver independiente
 cd CloudBeaver && docker-compose up -d
+
+# MongoDB con Mongo Express
+cd MongoDB && docker-compose up -d
 ```
 
 ### Detener Servicios
@@ -204,6 +264,7 @@ echo "AIRFLOW_UID=$(id -u)" >> Airflow/.env
 # Verificar puertos ocupados
 netstat -tlnp | grep :8080
 netstat -tlnp | grep :8978
+netstat -tlnp | grep :8081
 
 # Cambiar puertos en docker-compose.yaml
 ```
@@ -221,6 +282,14 @@ docker-compose exec postgres pg_isready -U airflow
 docker-compose restart postgres
 ```
 
+#### MongoDB no Inicia
+```bash
+# Verificar logs de MongoDB
+docker-compose logs mongo
+
+# Asegurarse que el puerto 27017 esté libre
+```
+
 ### Logs Útiles
 ```bash
 # Logs de inicialización de Airflow
@@ -231,6 +300,9 @@ docker-compose logs airflow-scheduler
 
 # Logs de la base de datos
 docker-compose logs postgres
+
+# Logs de MongoDB
+docker-compose logs mongo
 ```
 
 ## 🤝 Contribución
