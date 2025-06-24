@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_db_test
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - db_network
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver_test
+    restart: always
+    ports:
+      - "8978:8978"
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    environment:
+      CB_SERVER_NAME: CloudBeaver
+      CB_ADMIN_NAME: ${CB_ADMIN_NAME}
+      CB_ADMIN_PASSWORD: ${CB_ADMIN_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - db_network
+
+volumes:
+  postgres_data:
+    driver: local
+  cloudbeaver_data:
+    driver: local
+    
+networks:
+  db_network:
+    driver: bridge
