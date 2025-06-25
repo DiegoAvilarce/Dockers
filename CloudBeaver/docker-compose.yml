@@ -13,6 +13,7 @@ services:
       CB_ADMIN_PASSWORD: ${CB_ADMIN_PASSWORD}
     networks:
       - airflow_net
+      - debezium_net
 
 volumes:
   cloudbeaver_data:
@@ -22,3 +23,6 @@ networks:
   airflow_net:
     external: true
     name: cloudbeaver_airflow_net
+  debezium_net:
+    external: true
+    name: kafkaydebezium_debezium_net

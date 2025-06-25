@@ -10,3 +10,5 @@ venv.bak/
 
 airflow.cfg
 **/airflow.cfg
+
+**/pasos.txt
