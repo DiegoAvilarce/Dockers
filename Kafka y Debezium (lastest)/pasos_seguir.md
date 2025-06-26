@@ -132,27 +132,37 @@ INSERT INTO orders(id, customerId, total) VALUES ('1', '1', 99.99);
 
 ## 📡 Paso 4: Consumir Mensajes de Kafka
 
-### 4.1 Acceder al contenedor de Kafka
+### 4.1 Verificar que el broker de Kafka esté activo
+
+Primero, accede al contenedor de Kafka y verifica que el broker esté funcionando:
+
+```bash
+docker exec -it kafka /bin/bash 
+kafka-topics.sh --bootstrap-server kafka:9092 --list
+```
+
+### 4.2 Consumir mensajes de Kafka para ver los cambios de DML
+
+Una vez verificado que el broker está activo, ejecuta Kafka para ver los mensajes que se están enviando con los DML de la base de datos.
+
+Accede al contenedor de Kafka:
 
 ```bash
 docker exec -it kafka /bin/bash
 ```
 
-### 4.2 Consumir mensajes de la tabla Customer
+### 4.3 Consumir mensajes de la tabla Customer
 
 ```bash
-kafka-console-consumer.sh --bootstrap-server kafka:9092 \
---topic dbserver2.public.customer --from-beginning
+kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic dbserver2.public.customer --from-beginning
 ```
 
-### 4.3 Consumir mensajes de la tabla Orders
+### 4.4 Consumir mensajes de la tabla Orders
 
 En otra terminal, ejecuta:
 
 ```bash
-docker exec -it kafka /bin/bash
-kafka-console-consumer.sh --bootstrap-server kafka:9092 \
---topic dbserver2.public.orders --from-beginning
+kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic dbserver2.public.orders --from-beginning
 ```
 
 ---
