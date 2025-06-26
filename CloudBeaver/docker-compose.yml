@@ -14,6 +14,7 @@ services:
     networks:
       - airflow_net
       - debezium_net
+      - debezium_net_v2
 
 volumes:
   cloudbeaver_data:
@@ -26,3 +27,6 @@ networks:
   debezium_net:
     external: true
     name: kafkaydebezium_debezium_net
+  debezium_net_v2:
+    external: true
+    name: debezium_net_v2_latest
