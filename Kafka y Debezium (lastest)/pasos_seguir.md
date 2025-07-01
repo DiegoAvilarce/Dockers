@@ -244,8 +244,15 @@ curl -X GET http://localhost:8083/connectors
 # Ver configuración de un conector
 curl -X GET http://localhost:8083/connectors/cqrs-test-connector-postgres_v2/config
 
+# Eliminar conector
+curl -X DELETE http://localhost:8083/connectors/cqrs-test-connector-postgres_v2
+
 # Ver topics disponibles
 docker exec kafka kafka-topics.sh --bootstrap-server kafka:9092 --list
+
+# Eliminar topics
+docker exec kafka kafka-topics.sh --bootstrap-server kafka:9092 --delete --topic dbserver2.public.orders
+
 ```
 
 ---
@@ -284,7 +291,8 @@ http://kafkaydebeziumlastest-debezium-1:8083/connectors/ -d "{
     \"topic.prefix\": \"dbserver2\",
     \"table.include.list\": \"public.*\",
     \"publication.autocreate.mode\": \"filtered\",
-    \"snapshot.mode\": \"initial\"
+    \"snapshot.mode\": \"initial\",
+    \"decimal.handling.mode\": \"string\"
   }
 }"
 ```
