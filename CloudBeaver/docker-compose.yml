@@ -15,6 +15,7 @@ services:
       - airflow_net
       - debezium_net
       - debezium_net_v2
+      - gitea_net
 
 volumes:
   cloudbeaver_data:
@@ -30,3 +31,6 @@ networks:
   debezium_net_v2:
     external: true
     name: debezium_net_v2_latest
+  gitea_net:
+    external: true
+    name: gitea_net
