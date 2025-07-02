@@ -31,12 +31,13 @@ services:
       - GITEA__database__PASSWD=${POSTGRES_PASSWORD:-gitea}
       - GITEA__service__DISABLE_REGISTRATION=true # para deshabilitar el registro de usuarios
       - GITEA__service__DISABLE_ORGANIZATION_CREATION=true # para deshabilitar la creación de organizaciones
-      
+      - GITEA__server__SSH_CREATE_AUTHORIZED_KEYS_FILE=true # para crear el archivo authorized_keys
+      - GITEA__server__SSH_AUTHORIZED_KEYS_BACKUP=true # para hacer una copia de seguridad del archivo authorized_keys
     ports:
       - "3000:3000"
       - "222:22"
     volumes:
-      - ./gitea:/data
+      - gitea_data:/data # ← Volumen Docker en lugar de bind mount
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     depends_on:
@@ -51,4 +52,6 @@ networks:
     name: gitea_net
 volumes:
   postgres_data:
+    driver: local
+  gitea_data:
     driver: local
