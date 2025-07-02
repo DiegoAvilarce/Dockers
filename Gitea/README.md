@@ -45,6 +45,21 @@ wsl id -u
 wsl id -g
 ```
 
+### Configuración de dominio local (Windows)
+
+Para acceder a Gitea usando un nombre de dominio personalizado en lugar de `localhost`, puedes usar el archivo `setup-host.bat` incluido:
+
+1. **Ejecutar como administrador**: Haz clic derecho en `setup-host.bat` y selecciona "Ejecutar como administrador"
+2. **Configuración automática**: El script agregará automáticamente la entrada `127.0.0.1 gitea.local` al archivo hosts de Windows
+3. **Acceso**: Después podrás acceder a Gitea en `http://gitea.local:3000`
+
+**Nota**: Recuerda actualizar las variables de entorno para que coincidan con el nuevo dominio:
+```env
+GITEA_DOMAIN=gitea.local
+GITEA_ROOT_URL=http://gitea.local:3000
+GITEA_SSH_DOMAIN=gitea.local
+```
+
 ## Instalación y uso
 
 ### 1. Iniciar el servicio
