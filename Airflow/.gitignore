@@ -6,3 +6,7 @@ airflow.cfg
 example_dags/
 **/example_dags/
 **latest
+dags
+logs
+config
+plugins
