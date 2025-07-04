@@ -1,6 +1,6 @@
-# 🌬️ Apache Airflow con Docker Compose
+# 🌬️ Apache Airflow 3.0.2 con Docker Compose (Sin CloudBeaver)
 
-Esta carpeta contiene la configuración completa de Apache Airflow usando Docker Compose con arquitectura CeleryExecutor, incluyendo PostgreSQL, Redis y CloudBeaver integrado.
+Esta carpeta contiene la configuración completa de Apache Airflow 3.0.2 usando Docker Compose con arquitectura CeleryExecutor, incluyendo PostgreSQL y Redis.
 
 ## 📋 Tabla de Contenidos
 
@@ -29,10 +29,10 @@ Esta carpeta contiene la configuración completa de Apache Airflow usando Docker
                  │                       │                       │
                  └───────────────────────┼───────────────────────┘
                                          │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   PostgreSQL    │    │     Redis       │    │   CloudBeaver   │
-│   (Database)    │    │ (Message Broker)│    │  (Port 8978)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+         ┌─────────────────┐    ┌─────────────────┐
+         │   PostgreSQL    │    │     Redis       │
+         │   (Database)    │    │ (Message Broker)│
+         └─────────────────┘    └─────────────────┘
 ```
 
 ## 🚀 Servicios Incluidos
@@ -48,7 +48,6 @@ Esta carpeta contiene la configuración completa de Apache Airflow usando Docker
 ### Infraestructura
 - **postgres**: Base de datos PostgreSQL 13
 - **redis**: Message broker Redis 7.2 para Celery
-- **cloudbeaver**: Interfaz web para administración de bases de datos (Puerto 8978)
 
 ### Servicios Opcionales
 - **airflow-cli**: CLI de Airflow para debugging (perfil: debug)
@@ -70,10 +69,6 @@ POSTGRES_DB=airflow
 _AIRFLOW_WWW_USER_USERNAME=admin
 _AIRFLOW_WWW_USER_PASSWORD=tu_admin_password_seguro
 
-# CloudBeaver
-CB_ADMIN_NAME=admin
-CB_ADMIN_PASSWORD=tu_cloudbeaver_password_seguro
-
 # UID del usuario (Linux/Mac - opcional en Windows)
 AIRFLOW_UID=1001
 
@@ -84,7 +79,7 @@ _PIP_ADDITIONAL_REQUIREMENTS=
 ### Directorios Importantes
 
 ```
-Airflow/
+Airflow (version 3.0.2 sin Qlik)/
 ├── docker-compose.yaml     # Configuración principal
 ├── README.md              # Este archivo
 ├── .env                   # Variables de entorno
@@ -105,11 +100,8 @@ REM Editar variables según tu configuración
 notepad .env
 ```
 
-### 2. Construir e Inicializar
+### 2. Inicializar Airflow
 ```cmd
-REM Construir imagen personalizada
-docker-compose build
-
 REM Inicializar base de datos y configuración
 docker-compose up airflow-init
 ```
@@ -130,8 +122,7 @@ docker-compose ps
 | Servicio | URL | Credenciales |
 |----------|-----|--------------|
 | **Airflow UI** | http://localhost:8080 | Usuario: admin<br>Contraseña: (desde .env) |
-| **CloudBeaver** | http://localhost:8978 | Usuario: admin<br>Contraseña: (desde .env) |
-| **Flower** | http://localhost:5555 | Sin autenticación |
+| **Flower** | http://localhost:5555 | Sin autenticación<br>(Solo con perfil flower) |
 
 ### Comandos Útiles
 
@@ -139,14 +130,14 @@ docker-compose ps
 REM Ver logs en tiempo real
 docker-compose logs -f airflow-scheduler
 
-REM Acceder al CLI de Airflow
-docker-compose run --rm airflow-cli bash
+REM Acceder al CLI de Airflow (perfil debug)
+docker-compose --profile debug run --rm airflow-cli bash
 
 REM Habilitar Flower (monitor de Celery)
 docker-compose --profile flower up -d
 
 REM Ejecutar comando específico de Airflow
-docker-compose run --rm airflow-cli airflow dags list
+docker-compose --profile debug run --rm airflow-cli airflow dags list
 
 REM Reiniciar un servicio específico
 docker-compose restart airflow-scheduler
@@ -188,8 +179,8 @@ Todos los servicios tienen health checks configurados:
 - **Airflow Services**: HTTP endpoints específicos
 
 ### Conexión a Base de Datos
-**Desde CloudBeaver:**
-- Host: `postgres`
+**Parámetros de conexión:**
+- Host: `postgres` (desde contenedores) o `localhost` (desde host)
 - Puerto: `5432`
 - Base de datos: `airflow` (o valor de POSTGRES_DB)
 - Usuario: `airflow` (o valor de POSTGRES_USER)
@@ -200,9 +191,10 @@ Todos los servicios tienen health checks configurados:
 ### Problemas Comunes
 
 #### Error de Permisos (Linux/Mac)
-```bash
-# Configurar UID correcto (solo Linux/Mac)
-echo "AIRFLOW_UID=$(id -u)" >> .env
+```cmd
+REM En Windows este problema es menos común
+REM Si ocurre, verificar variables de entorno:
+echo %AIRFLOW_UID%
 ```
 
 #### Servicios no Inician
@@ -257,9 +249,6 @@ docker-compose down
 REM Actualizar imágenes
 docker-compose pull
 
-REM Reconstruir imagen personalizada
-docker-compose build --no-cache
-
 REM Reiniciar servicios
 docker-compose up -d
 ```
@@ -270,6 +259,7 @@ REM Backup de base de datos
 docker-compose exec postgres pg_dump -U airflow airflow > backup_%date:~-4,4%%date:~-10,2%%date:~-7,2%.sql
 
 REM Backup de configuración (usar herramientas como 7zip o WinRAR)
+powershell Compress-Archive -Path config\,dags\,plugins\ -DestinationPath airflow_config_%date:~-4,4%%date:~-10,2%%date:~-7,2%.zip
 ```
 
 ### Limpieza
@@ -292,6 +282,16 @@ docker image prune -f
 - 🚀 **Recursos**: Requiere mínimo 4GB RAM y 2 CPUs
 - 📊 **Ejemplos**: Los DAGs de ejemplo están habilitados por defecto
 - 🪟 **Windows**: Comandos adaptados para Windows CMD/PowerShell
+- 🚫 **CloudBeaver**: Esta versión NO incluye CloudBeaver (sin Qlik)
+- 🎯 **Versión**: Apache Airflow 3.0.2 con nuevas características
+
+## 🆕 Características de Airflow 3.0.2
+
+- **Nuevo Auth Manager**: FabAuthManager como gestor de autenticación por defecto
+- **API de Ejecución**: Servidor API separado para mejor rendimiento
+- **Mejoras en DAG Processor**: Procesamiento más eficiente de DAGs
+- **Health Checks Mejorados**: Verificaciones de salud más robustas
+- **Configuración Simplificada**: Menos variables de entorno requeridas
 
 ---
 *Configuración actualizada: Julio 2025*
