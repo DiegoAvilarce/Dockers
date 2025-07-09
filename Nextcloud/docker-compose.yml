@@ -1,0 +1,49 @@
+services:
+  # Note: MariaDB is external service. You can find more information about the configuration here:
+  # https://hub.docker.com/_/mariadb
+  mariadb:
+    # Note: Check the recommend version here: https://docs.nextcloud.com/server/latest/admin_manual/installation/system_requirements.html#server
+    image: mariadb:latest
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED
+    volumes:
+      - mariadb:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MARIADB_PASSWORD}
+      - MYSQL_DATABASE=${MARIADB_NAME}
+      - MYSQL_USER=${MARIADB_USER}
+    networks:
+      - nextcloud_net
+
+
+  nextcloud:
+    image: nextcloud:latest
+    restart: always
+    user: "1001:1001"  # Fuerza al contenedor a usar tu UID/GID
+    ports:
+      - "${NEXTCLOUD_PORT}:80"
+    depends_on:
+      - mariadb
+    volumes:
+      - nextcloud:/var/www/html
+      - /home/qsenseadmin:/mnt/qsenseadmin:rw  # Montar tu directorio local
+      - /home/qsenseadmin/Dockers:/mnt/dockers:rw
+      - /home/qsenseadmin/Dockers/Airflow/dags:/mnt/dags:rw
+    environment:
+      - MYSQL_PASSWORD=${MARIADB_PASSWORD}
+      - MYSQL_DATABASE=${MARIADB_NAME}
+      - MYSQL_USER=${MARIADB_USER}
+      - MYSQL_HOST=mariadb
+      - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS}
+    networks:
+      - nextcloud_net
+
+
+volumes:
+  nextcloud:
+  mariadb:
+networks:
+  nextcloud_net:
+    driver: bridge
+    name: nextcloud_net
