@@ -92,6 +92,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-airflow} # @davila 24-06-2025: Antes era POSTGRES_USER: airflow
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow} # @davila 24-06-2025: Antes era POSTGRES_PASSWORD: airflow
       POSTGRES_DB: ${POSTGRES_DB:-airflow} # @davila 24-06-2025: Antes era POSTGRES_DB: airflow
+    ports:
+      - "5432:5432" # expongo el puerto 5432 para que pueda ser accedido desde fuera del contenedor
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
