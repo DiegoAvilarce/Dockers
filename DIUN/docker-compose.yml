@@ -1,5 +1,3 @@
-name: diun
-
 services:
   diun:
     image: crazymax/diun:latest
