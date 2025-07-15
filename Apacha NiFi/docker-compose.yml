@@ -1,0 +1,57 @@
+services:
+  nifi:
+    image: apache/nifi:latest
+    container_name: nifi
+    restart: unless-stopped
+    ports:
+      - "8443:8443"  # Puerto HTTPS para la interfaz web
+    environment: 
+      # Configuración de seguridad (desarrollo)
+      - SINGLE_USER_CREDENTIALS_USERNAME=${SINGLE_USER_CREDENTIALS_USERNAME:-nifi}
+      - SINGLE_USER_CREDENTIALS_PASSWORD=${SINGLE_USER_CREDENTIALS_PASSWORD:-ctsBtRBKHRAx69EqUghvvgEvjnaLjFEB}
+      
+      # Configuración de timezone
+      - TZ=America/Santiago
+      
+    deploy:
+      resources:
+        limits:
+          cpus: '0.95'
+          memory: 4G
+      
+    volumes:
+      # Drivers JDBC personalizados (RUTA CORREGIDA)
+      - ./nifi/jdbc:/opt/nifi/nifi/jdbc
+      
+      # Carpeta para archivos de entrada
+      - ./nifi/input:/opt/nifi/input
+      
+      # Carpeta para archivos de salida (NUEVA - para PutFile)
+      - ./nifi/output:/opt/nifi/output
+      
+      # Datos persistentes
+      - nifi-logs:/opt/nifi/nifi-current/logs
+      - nifi-conf:/opt/nifi/nifi-current/conf
+      - nifi-content_repository:/opt/nifi/nifi-current/content_repository
+      - nifi-database_repository:/opt/nifi/nifi-current/database_repository
+      - nifi-flowfile_repository:/opt/nifi/nifi-current/flowfile_repository
+      - nifi-provenance_repository:/opt/nifi/nifi-current/provenance_repository
+      - nifi-state:/opt/nifi/nifi-current/state
+      
+    networks:
+      - nifi_net
+
+volumes:
+  # Volúmenes para NiFi (sin driver: local redundante)
+  nifi-logs:
+  nifi-conf:
+  nifi-content_repository:
+  nifi-database_repository:
+  nifi-flowfile_repository:
+  nifi-provenance_repository:
+  nifi-state:
+
+networks:
+  nifi_net:
+    driver: bridge
+    name: nifi_net
