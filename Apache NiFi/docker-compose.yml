@@ -2,7 +2,7 @@ services:
   nifi:
     image: apache/nifi:latest
     container_name: nifi
-    restart: unless-stopped
+    restart: on-failure
     ports:
       - "8443:8443"  # Puerto HTTPS para la interfaz web
     environment: 

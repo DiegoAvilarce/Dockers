@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:13
+    container_name: nifi-registry-postgres
+    restart: on-failure
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - TZ=${TZ}
+    ports:
+      - "5434:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - nifi_net
+
+  nifi-registry:
+    image: apache/nifi-registry:latest
+    container_name: nifi-registry
+    restart: on-failure
+    ports:
+      - "18080:18080"
+    environment:
+      - NIFI_REGISTRY_WEB_HTTP_PORT=18080
+      - NIFI_REGISTRY_WEB_HTTP_HOST=0.0.0.0
+      - TZ=${TZ}
+      - NIFI_REGISTRY_DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - NIFI_REGISTRY_DB_CLASS=org.postgresql.Driver
+      - NIFI_REGISTRY_DB_USER=${POSTGRES_USER}
+      - NIFI_REGISTRY_DB_PASS=${POSTGRES_PASSWORD}
+      - NIFI_REGISTRY_DB_FLOW_MIGRATION_AUTO_BASELINE=true
+      - NIFI_REGISTRY_SECURITY_USER_LOGIN_IDENTITY_PROVIDER=
+      - NIFI_REGISTRY_SECURITY_USER_AUTHORIZER=
+      - NIFI_REGISTRY_SECURITY_ALLOW_ANONYMOUS_AUTHENTICATION=true
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    volumes:
+      - nifi-registry-flow-storage:/opt/nifi-registry/nifi-registry-current/flow_storage
+      - nifi-registry-logs:/opt/nifi-registry/nifi-registry-current/logs
+      - nifi-registry-conf:/opt/nifi-registry/nifi-registry-current/conf
+      - ./nifi-registry/backups:/opt/nifi-registry/backups
+    depends_on:
+      - postgres
+    networks:
+      - nifi_net
+
+volumes:
+  postgres-data:
+  nifi-registry-flow-storage:
+  nifi-registry-logs:
+  nifi-registry-conf:
+
+networks:
+  nifi_net:
+    external: true
+    name: nifi_net
