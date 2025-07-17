@@ -5,11 +5,15 @@ services:
     restart: on-failure
     ports:
       - "8443:8443"  # Puerto HTTPS para la interfaz web
-    environment: 
+    environment:
+      # Configuración para permitir acceso por IP
+      - NIFI_WEB_HTTPS_HOST=0.0.0.0
+      - NIFI_WEB_HTTPS_PORT=8443
+      - NIFI_WEB_PROXY_HOST=${SERVER_IP}:8443
       # Configuración de seguridad (desarrollo)
       - SINGLE_USER_CREDENTIALS_USERNAME=${SINGLE_USER_CREDENTIALS_USERNAME:-nifi}
       - SINGLE_USER_CREDENTIALS_PASSWORD=${SINGLE_USER_CREDENTIALS_PASSWORD:-ctsBtRBKHRAx69EqUghvvgEvjnaLjFEB}
-      
+      - NIFI_SECURITY_ALLOW_ANONYMOUS_AUTHENTICATION=false
       # Configuración de timezone
       - TZ=America/Santiago
       
