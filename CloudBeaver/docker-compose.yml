@@ -16,6 +16,7 @@ services:
       - debezium_net
       - debezium_net_v2
       - gitea_net
+      - bi_postgres_net
 
 volumes:
   cloudbeaver_data:
@@ -34,3 +35,6 @@ networks:
   gitea_net:
     external: true
     name: gitea_net
+  bi_postgres_net:
+    external: true
+    name: bi_postgres_net

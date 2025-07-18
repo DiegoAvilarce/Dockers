@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:13
+    container_name: bi_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user} 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password} 
+      POSTGRES_DB: ${POSTGRES_DB:-bi_postgres}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bi_postgres_net
+
+
+networks:
+  bi_postgres_net:
+    driver: bridge
+    name: bi_postgres_net
+volumes:
+  postgres_data:
+    driver: local

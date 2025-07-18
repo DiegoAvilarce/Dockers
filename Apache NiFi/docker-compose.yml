@@ -44,6 +44,7 @@ services:
       
     networks:
       - nifi_net
+      - bi_postgres_net
 
 volumes:
   # Volúmenes para NiFi (sin driver: local redundante)
@@ -59,3 +60,6 @@ networks:
   nifi_net:
     driver: bridge
     name: nifi_net
+  bi_postgres_net:
+    external: true
+    name: bi_postgres_net
