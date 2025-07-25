@@ -8,3 +8,7 @@ CREATE TABLE api_buk_chile.boss (
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id, id_jobs)
 );
+
+-- Definición de la tabla api_buk_chile.boss
+COMMENT ON TABLE api_buk_chile.boss IS 'Tabla principal de jefes con información de empleados y trabajos asociados';
+

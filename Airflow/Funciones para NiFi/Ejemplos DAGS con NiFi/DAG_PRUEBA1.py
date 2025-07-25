@@ -217,6 +217,7 @@ with DAG(dag_id = DAG_ID,
 
         #count_upserts_role = '59d08934-f3e7-31fe-a4ed-5b60eb34e4eb'
         #count_upserts_boss = '44a7cc1f-d84d-35c4-a845-00d85ce7bd7a'
+        #count_upserts_current_jobunt = '31f3aac0-c4b8-3efc-84da-10bcaa88459c'
         
 
         prepare_processor_loop_invoke = PythonOperator(task_id='preparar_procesador_loop_invoke',python_callable=prepare_processor_state, op_kwargs={
@@ -249,6 +250,11 @@ with DAG(dag_id = DAG_ID,
             'id_counter2': '54b0691b-6363-36bb-8186-0e774c3bfd14'
         })
 
+        wait_final_counter_current_job = PythonOperator(task_id='esperar_final_contador_current_job',python_callable=wait_for_update_counters, op_kwargs={
+            'id_counter1': 'f175c1de-f869-3e16-a027-7dd52bb86166',
+            'id_counter2': '31f3aac0-c4b8-3efc-84da-10bcaa88459c'
+        })
+
         wait_final_counter_role = PythonOperator(task_id='esperar_final_contador_role',python_callable=wait_for_update_counters, op_kwargs={
             'id_counter1': '71b1beee-4741-3617-a03b-c80570ffc6f4',
             'id_counter2': '59d08934-f3e7-31fe-a4ed-5b60eb34e4eb'
@@ -261,7 +267,7 @@ with DAG(dag_id = DAG_ID,
 
 
         star_task >> [prepare_processor_loop_invoke, prepare_all_counters] >> running_processor_intial
-        running_processor_intial >> wait_final_process_loop_invoke >> [wait_final_counter_employees, wait_final_counter_jobs, wait_final_counter_role, wait_final_counter_boss] >> end_task
+        running_processor_intial >> wait_final_process_loop_invoke >> [wait_final_counter_employees, wait_final_counter_jobs, wait_final_counter_current_job, wait_final_counter_role, wait_final_counter_boss] >> end_task
 
 
 # [END instantiate_dag]

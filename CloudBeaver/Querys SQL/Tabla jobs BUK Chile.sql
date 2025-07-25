@@ -37,3 +37,6 @@ CREATE TABLE api_buk_chile.jobs (
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id)
 );
+
+-- Definición de la tabla api_buk_chile.jobs
+COMMENT ON TABLE api_buk_chile.jobs IS 'Tabla que almacena información de trabajos en Buk Chile, incluyendo detalles del empleado, contrato y asignaciones.';

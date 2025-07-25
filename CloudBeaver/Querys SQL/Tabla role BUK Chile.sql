@@ -11,3 +11,5 @@ CREATE TABLE api_buk_chile.role (
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id, id_jobs)
 );
+
+COMMENT ON TABLE api_buk_chile.role IS 'Tabla de roles de empleados con información sobre el rol, requisitos y áreas asociadas';
