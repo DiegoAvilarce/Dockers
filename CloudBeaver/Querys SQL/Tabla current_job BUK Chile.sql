@@ -52,7 +52,7 @@ CREATE TABLE api_buk_chile.current_job (
     -- Auditoría
     timestamp_nifi TIMESTAMPTZ,
 
-    PRIMARY KEY (id_employees)
+    PRIMARY KEY (id_employees) --@davila en este caso la PK es el id_employees, ya que cada empleado 9405 no tiene un current_job por lo que es nulo
 );
 
 -- Comentarios para documentar la tabla
