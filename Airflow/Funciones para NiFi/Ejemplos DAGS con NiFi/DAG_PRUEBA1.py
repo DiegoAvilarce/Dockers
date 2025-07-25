@@ -228,7 +228,8 @@ with DAG(dag_id = DAG_ID,
         prepare_all_counters = PythonOperator(task_id='preparar_contadores',python_callable=prepare_counter, op_kwargs={
             'id_counters': ['f175c1de-f869-3e16-a027-7dd52bb86166', '71b1beee-4741-3617-a03b-c80570ffc6f4', 
                             'fe4c56d7-7bfb-3b51-a74b-524710cb899d', '54b0691b-6363-36bb-8186-0e774c3bfd14',
-                            '59d08934-f3e7-31fe-a4ed-5b60eb34e4eb', '44a7cc1f-d84d-35c4-a845-00d85ce7bd7a']
+                            '59d08934-f3e7-31fe-a4ed-5b60eb34e4eb', '44a7cc1f-d84d-35c4-a845-00d85ce7bd7a',
+                            '31f3aac0-c4b8-3efc-84da-10bcaa88459c']
         })
 
         running_processor_intial = PythonOperator(task_id='correr_procesador_inicial',python_callable=startup, op_kwargs={

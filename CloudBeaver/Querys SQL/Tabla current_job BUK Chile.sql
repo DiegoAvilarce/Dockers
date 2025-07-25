@@ -1,7 +1,7 @@
 -- Tabla principal de trabajos actuales basada en estructura normalizada
 CREATE TABLE api_buk_chile.current_job (
     -- Identificadores principales
-    id INTEGER PRIMARY KEY,
+    id INTEGER,
     id_employees INTEGER, -- Nuevo campo: ID del empleado
     company_id INTEGER,
     area_id INTEGER,
@@ -50,7 +50,9 @@ CREATE TABLE api_buk_chile.current_job (
     custom_attributes JSONB, -- Atributos personalizados
     
     -- Auditoría
-    timestamp_nifi TIMESTAMPTZ
+    timestamp_nifi TIMESTAMPTZ,
+
+    PRIMARY KEY (id_employees)
 );
 
 -- Comentarios para documentar la tabla
