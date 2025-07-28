@@ -70,6 +70,29 @@ access_payload = {
 
 token = funciones_nifi.get_token(url_nifi_api, access_payload, verify=False)
 
+# Setear los procesadores necesarios
+
+processor_initial_documents = '928c8105-e240-3836-2d18-dccbf3e5ecc2'
+processor_initial_clients = 'aba3efbd-d14f-3c63-3ab7-a8ab26b20763'
+processor_initial_variants = 'c5e35c5e-a9c5-37f5-ab09-2a6712ffb55a'
+processor_initial_products = 'e69895ef-b42c-35a1-b7f5-ddcd15f34f22'
+
+processor_loop_invoke_documents = 'ec8f7b55-3fa5-3ed6-3505-adc6cf0541df'
+processor_loop_invoke_clients = '85f46549-09f5-3d0d-2e79-86955949db39'
+processor_loop_invoke_variants = 'a6ce42cd-5cca-3ff8-b671-fa4a5d9851e8'
+processor_loop_invoke_products= 'b47ce041-5ca7-391d-d5a8-aad17660f36f'
+
+count_split_documents = 'bc2c96a5-9ae0-320a-834e-2933cc80d3bb'
+count_upserts_documents = '3128fd8a-53b8-34a1-9039-ba4d61b7bf36'
+
+count_split_clients = 'edc39350-762d-34dc-8f92-2b4fb6981cca'
+count_upserts_clients = 'adaedb56-4108-385f-9dc5-a4ad41ff9307'
+
+count_split_variants = '8ea8ce6e-70cb-3b46-9ff5-9a7690779b8e'
+count_upserts_variants = '5a5e5839-fda2-38ed-b138-4a925a6e082d'
+
+count_split_products = '6e4c0f4c-5f4a-3a17-81aa-690013b59637'
+count_upserts_products = '4a4589cb-c39c-3423-8962-963e77ea3c83'
 
 # Definir funciones Python
 
@@ -306,29 +329,7 @@ with DAG(dag_id = DAG_ID,
         star_task = EmptyOperator(task_id="inicia_proceso")
         end_task = EmptyOperator(task_id="finaliza_proceso")
 
-        # Setear los procesadores necesarios
-
-        processor_initial_documents = '928c8105-e240-3836-2d18-dccbf3e5ecc2'
-        processor_initial_clients = 'aba3efbd-d14f-3c63-3ab7-a8ab26b20763'
-        processor_initial_variants = 'c5e35c5e-a9c5-37f5-ab09-2a6712ffb55a'
-        processor_initial_products = 'e69895ef-b42c-35a1-b7f5-ddcd15f34f22'
-
-        processor_loop_invoke_documents = 'ec8f7b55-3fa5-3ed6-3505-adc6cf0541df'
-        processor_loop_invoke_clients = '85f46549-09f5-3d0d-2e79-86955949db39'
-        processor_loop_invoke_variants = 'a6ce42cd-5cca-3ff8-b671-fa4a5d9851e8'
-        processor_loop_invoke_products= 'b47ce041-5ca7-391d-d5a8-aad17660f36f'
-
-        count_split_documents = 'bc2c96a5-9ae0-320a-834e-2933cc80d3bb'
-        count_upserts_documents = '3128fd8a-53b8-34a1-9039-ba4d61b7bf36'
-
-        count_split_clients = 'edc39350-762d-34dc-8f92-2b4fb6981cca'
-        count_upserts_clients = 'adaedb56-4108-385f-9dc5-a4ad41ff9307'
-
-        count_split_variants = '8ea8ce6e-70cb-3b46-9ff5-9a7690779b8e'
-        count_upserts_variants = '5a5e5839-fda2-38ed-b138-4a925a6e082d'
-
-        count_split_products = '6e4c0f4c-5f4a-3a17-81aa-690013b59637'
-        count_upserts_products = '4a4589cb-c39c-3423-8962-963e77ea3c83'
+    
 
 
         prepare_multiple_processors_dict = PythonOperator(task_id='preparar_procesadores_multiples',python_callable=prepare_processor_state,op_kwargs={
@@ -383,6 +384,8 @@ with DAG(dag_id = DAG_ID,
             'id_counter1': count_split_products,
             'id_counter2': count_upserts_products
         }, execution_timeout =timedelta(minutes=10))
+
+        
 
 
         star_task >> prepare_multiple_processors_dict >> prepare_all_counters >> running_processor_intial
