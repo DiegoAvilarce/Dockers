@@ -1,4 +1,4 @@
-CREATE TABLE bsale_syf.documents (
+CREATE TABLE api_bsale_syf.documents (
     id                     INTEGER,
     href                   TEXT,
     emission_date          BIGINT,
