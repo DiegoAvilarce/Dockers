@@ -287,33 +287,93 @@ def wait_for_update_state_processor(*processor_configs, **kwargs):
     
     logging.info("All processors have reached state '1' successfully!")
 
-def wait_for_update_counters(id_counter1, id_counter2):
-    """ Espera hasta que los contadores con los IDs id_counter1 e id_counter2 sean iguales.
+def wait_for_update_counters(*counter_pairs, **kwargs):
+    """ Espera hasta que cada par de contadores tenga valores iguales.
     @DAVILA 24-07-2025
-    Esta función verifica el valor de los contadores y espera hasta que sean iguales,
-    lo que indica que ambos contadores han alcanzado el mismo número de registros procesados.
-    :param id_counter1: ID del primer contador a verificar.
-    :param id_counter2: ID del segundo contador a verificar.
+    Esta función verifica múltiples pares de contadores y espera hasta que cada par tenga valores iguales,
+    lo que indica que ambos contadores en cada par han alcanzado el mismo número de registros procesados.
+    :param *counter_pairs: Tuplas de (id_counter1, id_counter2) o diccionarios con las configuraciones.
+    :param **kwargs: Para compatibilidad con llamadas usando counter_pairs=
     :return: None
     """
-    # Obtener los contadores
-    todos_contadores = funciones_nifi.get_counters(url_nifi_api, token, verify=False)
-    valor_inicial1 = funciones_nifi.get_counter_value_by_id(todos_contadores, id_counter1)
-    valor_inicial2 = funciones_nifi.get_counter_value_by_id(todos_contadores, id_counter2)
-    logging.info(f"Initial values: Counter 1: {valor_inicial1}, Counter 2: {valor_inicial2}")
-
-    while True:
-        todos_contadores_actual = funciones_nifi.get_counters(url_nifi_api, token, verify=False)
-        valor_actual1 = funciones_nifi.get_counter_value_by_id(todos_contadores_actual, id_counter1)
-        valor_actual2 = funciones_nifi.get_counter_value_by_id(todos_contadores_actual, id_counter2)
-
-        if valor_actual1 != valor_actual2:
-            logging.info("Waiting for counters to match...")
-            logging.info(f"Current values: Counter 1: {valor_actual1}, Counter 2: {valor_actual2}")
-            funciones_nifi.pause(15)
+    # Si se pasa como keyword argument
+    if 'counter_pairs' in kwargs:
+        if isinstance(kwargs['counter_pairs'], list):
+            configs_to_process = kwargs['counter_pairs']
         else:
-            logging.info(f"Counters matched: Counter 1: {valor_actual1}, Counter 2: {valor_actual2}")
-            break
+            configs_to_process = [kwargs['counter_pairs']]
+    else:
+        configs_to_process = counter_pairs
+    
+    # Normalizar las configuraciones a diccionarios
+    normalized_pairs = []
+    for i, config in enumerate(configs_to_process):
+        if isinstance(config, tuple) and len(config) == 2:
+            normalized_pairs.append({
+                'id_counter1': config[0],
+                'id_counter2': config[1],
+                'pair_name': f'Pair_{i+1}'
+            })
+        elif isinstance(config, dict):
+            pair_name = config.get('pair_name', f'Pair_{i+1}')
+            normalized_pairs.append({
+                'id_counter1': config['id_counter1'],
+                'id_counter2': config['id_counter2'],
+                'pair_name': pair_name
+            })
+        else:
+            raise ValueError(f"Invalid counter pair configuration: {config}. Expected tuple (id_counter1, id_counter2) or dict.")
+    
+    if len(normalized_pairs) == 0:
+        raise ValueError("Se requiere al menos un par de contadores para comparar")
+    
+    logging.info(f"Monitoring {len(normalized_pairs)} counter pair(s), waiting for each pair to match...")
+    
+    # Obtener estados iniciales
+    todos_contadores = funciones_nifi.get_counters(url_nifi_api, token, verify=False)
+    initial_states = {}
+    
+    for pair in normalized_pairs:
+        id_counter1 = pair['id_counter1']
+        id_counter2 = pair['id_counter2']
+        pair_name = pair['pair_name']
+        
+        valor_inicial1 = funciones_nifi.get_counter_value_by_id(todos_contadores, id_counter1)
+        valor_inicial2 = funciones_nifi.get_counter_value_by_id(todos_contadores, id_counter2)
+        
+        initial_states[pair_name] = {
+            'id_counter1': id_counter1,
+            'id_counter2': id_counter2,
+            'initial_value1': valor_inicial1,
+            'initial_value2': valor_inicial2
+        }
+        logging.info(f"Initial values for {pair_name}: Counter1={valor_inicial1}, Counter2={valor_inicial2}")
+    
+    # Monitorear cambios
+    pairs_pending = set(pair['pair_name'] for pair in normalized_pairs)
+    
+    while pairs_pending:
+        todos_contadores_actual = funciones_nifi.get_counters(url_nifi_api, token, verify=False)
+        
+        for pair_name in list(pairs_pending):
+            pair_info = initial_states[pair_name]
+            id_counter1 = pair_info['id_counter1']
+            id_counter2 = pair_info['id_counter2']
+            
+            valor_actual1 = funciones_nifi.get_counter_value_by_id(todos_contadores_actual, id_counter1)
+            valor_actual2 = funciones_nifi.get_counter_value_by_id(todos_contadores_actual, id_counter2)
+            
+            if valor_actual1 == valor_actual2:
+                logging.info(f"Pair matched for {pair_name}: Counter1={valor_actual1}, Counter2={valor_actual2}")
+                pairs_pending.remove(pair_name)
+            else:
+                logging.info(f"Waiting for {pair_name}: Counter1={valor_actual1}, Counter2={valor_actual2}")
+        
+        if pairs_pending:
+            logging.info(f"Still waiting for {len(pairs_pending)} pair(s)...")
+            funciones_nifi.pause(15)
+    
+    logging.info("All counter pairs have matched successfully!")
 
 
 with DAG(dag_id = DAG_ID,
@@ -365,30 +425,30 @@ with DAG(dag_id = DAG_ID,
                 {'id_processor': processor_loop_invoke_products, 'name_variable': 'no_has_next'}
             ]}, execution_timeout =timedelta(minutes=10))
         
-        wait_final_counter_documents = PythonOperator(task_id='esperar_final_contador_documents', python_callable=wait_for_update_counters, op_kwargs={
-            'id_counter1': count_split_documents,
-            'id_counter2': count_upserts_documents
-        }, execution_timeout =timedelta(minutes=10))
-
-        wait_final_counter_clients = PythonOperator(task_id='esperar_final_contador_clients', python_callable=wait_for_update_counters, op_kwargs={
-            'id_counter1': count_split_clients,
-            'id_counter2': count_upserts_clients
-        }, execution_timeout =timedelta(minutes=10))
-
-        wait_final_counter_variants = PythonOperator(task_id='esperar_final_contador_variants', python_callable=wait_for_update_counters, op_kwargs={
-            'id_counter1': count_split_variants,
-            'id_counter2': count_upserts_variants
-        }, execution_timeout =timedelta(minutes=10))
-
-        wait_final_counter_products = PythonOperator(task_id='esperar_final_contador_products', python_callable=wait_for_update_counters, op_kwargs={
-            'id_counter1': count_split_products,
-            'id_counter2': count_upserts_products
-        }, execution_timeout =timedelta(minutes=10))
-
-        
-
+        wait_all_counter_pairs_named = PythonOperator(task_id='esperar_final_todos_contadores',python_callable=wait_for_update_counters,op_kwargs={
+            'counter_pairs': [{
+                'id_counter1': count_split_documents,
+                'id_counter2': count_upserts_documents,
+                'pair_name': 'Documents'},
+                {
+                'id_counter1': count_split_clients,
+                'id_counter2': count_upserts_clients,
+                'pair_name': 'Clients'},
+                {
+                'id_counter1': count_split_variants,
+                'id_counter2': count_upserts_variants,
+                'pair_name': 'Variants'},
+                {
+                'id_counter1': count_split_products,
+                'id_counter2': count_upserts_products,
+                'pair_name': 'Products'
+                }  
+                ]
+            },
+            execution_timeout=timedelta(minutes=10)
+)
 
         star_task >> prepare_multiple_processors_dict >> prepare_all_counters >> running_processor_intial
-        running_processor_intial >> wait_final_process_loop_invoke >> [ wait_final_counter_documents,wait_final_counter_clients,wait_final_counter_variants, wait_final_counter_products] >> end_task
+        running_processor_intial >> wait_final_process_loop_invoke >> wait_all_counter_pairs_named >> end_task
 
 # [END instantiate_dag]
