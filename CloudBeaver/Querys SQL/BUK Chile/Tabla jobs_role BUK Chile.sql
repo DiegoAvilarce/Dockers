@@ -1,4 +1,4 @@
-CREATE TABLE api_buk_chile.role (
+CREATE TABLE api_buk_chile.jobs_role (
     id INTEGER,
     id_employees INTEGER,
     id_jobs INTEGER,
@@ -7,9 +7,9 @@ CREATE TABLE api_buk_chile.role (
     description TEXT,
     requirements TEXT,
     area_ids TEXT,
-    role_family VARCHAR(255),
+    role_family JSONB,
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id, id_jobs)
 );
 
-COMMENT ON TABLE api_buk_chile.role IS 'Tabla de roles de empleados con información sobre el rol, requisitos y áreas asociadas';
+COMMENT ON TABLE api_buk_chile.jobs_role IS 'Tabla de roles de empleados incrustada dentro de jobs';

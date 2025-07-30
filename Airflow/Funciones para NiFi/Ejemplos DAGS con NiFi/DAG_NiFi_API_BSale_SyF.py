@@ -10,6 +10,11 @@ import pendulum
 import json
 import logging
 
+# quitar los warnigngs de las peticiones
+import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 import davila_functions.nifi.principal as funciones_nifi
 
 
@@ -17,8 +22,8 @@ TAGS = ["NiFI API BSale SyF"]
 DAG_ID = 'DAG_NiFi_API_BSale_SyF'
 DAG_DESCRIPTION = 'DAG que desencadena flujos de NiFi para guardar datos JSON obenidos por API de BSale SyF en una base de datos PostgreSQL.'
 
-# que empiece a las 8,10,12,14,16 en horario UTC -3 (santiago de chile)
-DAG_SCHEDULE =  None
+# que empiece a las 8,10,12,15 en horario UTC -3 (santiago de chile)
+DAG_SCHEDULE =  '30 7,10,12,15 * * *' 
 START_VAR = pendulum.datetime(2025, 1, 27, tz="America/Santiago")
 
 # [START default_args]
@@ -30,7 +35,7 @@ default_args = {
     'email': ['davila@cramer.cl'],
     'email_on_failure': False,
     'email_on_retry': False, 
-    'retries': 2, # 0 para que no reintente
+    'retries': 0, # 0 para que no reintente
     'catchup': False, # false para que no ejecute tareas anteriores
     'retry_delay': timedelta(minutes=1),
     'max_active_runs' : 1,
@@ -76,11 +81,18 @@ processor_initial_documents = '928c8105-e240-3836-2d18-dccbf3e5ecc2'
 processor_initial_clients = 'aba3efbd-d14f-3c63-3ab7-a8ab26b20763'
 processor_initial_variants = 'c5e35c5e-a9c5-37f5-ab09-2a6712ffb55a'
 processor_initial_products = 'e69895ef-b42c-35a1-b7f5-ddcd15f34f22'
+processor_initial_details = 'a55a6bb4-a05c-3987-1d33-2245cc82efec'
+processor_initial_product_types = 'f149e771-8b4c-3f62-820b-d8fcd98fb4a7'
+processor_initial_document_types = 'c6e6277d-3f1a-33af-194d-965385dcf53c'
+processor_initial_checkout = 'f0af85bc-3e45-37e4-5ba9-8323c26c4c81'
 
 processor_loop_invoke_documents = 'ec8f7b55-3fa5-3ed6-3505-adc6cf0541df'
 processor_loop_invoke_clients = '85f46549-09f5-3d0d-2e79-86955949db39'
 processor_loop_invoke_variants = 'a6ce42cd-5cca-3ff8-b671-fa4a5d9851e8'
 processor_loop_invoke_products= 'b47ce041-5ca7-391d-d5a8-aad17660f36f'
+processor_loop_invoke_product_types = 'a3fcad05-8e1d-3d08-be00-9b7b66f205d9'
+processor_loop_invoke_document_types = 'b9731018-522e-38c7-291c-5a98242724a6'
+processor_loop_invoke_checkout = 'ce830924-d09e-38b6-6bea-b694af3863b8'
 
 count_split_documents = 'bc2c96a5-9ae0-320a-834e-2933cc80d3bb'
 count_upserts_documents = '3128fd8a-53b8-34a1-9039-ba4d61b7bf36'
@@ -94,51 +106,27 @@ count_upserts_variants = '5a5e5839-fda2-38ed-b138-4a925a6e082d'
 count_split_products = '6e4c0f4c-5f4a-3a17-81aa-690013b59637'
 count_upserts_products = '4a4589cb-c39c-3423-8962-963e77ea3c83'
 
+count_split_details = 'ebfef6be-2474-3e46-a340-f4c4cf02e48f'
+count_upserts_details = '0735eff2-6cf9-3e9b-8497-5a2c0235f15a'
+
+count_split_product_types = '15113910-e58c-3556-8cdc-872f92de999d'
+count_upserts_product_types = '8a3a4ce4-a873-3294-a01c-0731285458ce'
+
+count_split_document_types = 'f5216e77-d1a0-3c1f-a6dd-a51c48fe8c3d'
+count_upserts_document_types = '55b07a17-c23d-3de5-b722-031a765c537d'
+
+count_split_checkout = '7a8b2e27-4a04-33d2-adba-2994fbf109dd'
+count_upserts_checkout = 'ba79699b-4f78-388a-9f52-065f3699792d'
+
 # Definir funciones Python
 
-def startup(*id_processors, **kwargs):
+def startup(*processor_configs, **kwargs):
     """ Inicia el flujo inicial de NiFi con múltiples procesadores.   
-    @DAVILA 24-07-2025
+    @DAVILA 24-07-2025 - Mejorado con nombres descriptivos
     Esta función inicia los procesadores iniciales y luego los detiene,
     ya que no es necesario que sigan corriendo una vez que se ha iniciado el flujo.
     Se utiliza para preparar el flujo de trabajo de NiFi antes de ejecutar otras tareas.
-    :param *id_processors: IDs de los procesadores a iniciar.
-    :param **kwargs: Para compatibilidad con llamadas usando id_processors=
-    :return: None
-    """
-    # Si se pasa como keyword argument
-    if 'id_processors' in kwargs:
-        if isinstance(kwargs['id_processors'], list):
-            processors_to_start = kwargs['id_processors']
-        else:
-            processors_to_start = [kwargs['id_processors']]
-    else:
-        processors_to_start = id_processors
-    
-    logging.info(f"Starting {len(processors_to_start)} initial processor(s) to trigger NiFi flow...")
-    
-    # 1. Iniciar todos los procesadores
-    for id_processor in processors_to_start:
-        running_processor = funciones_nifi.update_processor_status(id_processor, "RUNNING", token, url_nifi_api, verify=False)
-        logging.info(f"{running_processor.status_code} - {running_processor.reason} Processor {id_processor} started")
-    
-    # Esperar 15 segundos para que el flujo se inicie
-    # Esto es necesario para que el flujo de NiFi tenga tiempo de procesar la solicitud y generar los FlowFiles necesarios.
-    logging.info("Waiting 15 seconds for NiFi flow to initialize...")
-    funciones_nifi.pause(15)
-
-    # 2. Detener todos los procesadores, ya que no es necesario que sigan corriendo
-    logging.info("Stopping processors...")
-    for id_processor in processors_to_start:
-        stopped_processor = funciones_nifi.update_processor_status(id_processor, "STOPPED", token, url_nifi_api)
-        logging.info(f"{stopped_processor.status_code} - {stopped_processor.reason} Processor {id_processor} stopped")
-        
-def prepare_processor_state(*processor_configs, **kwargs):
-    """ Prepara múltiples procesadores de NiFi para el flujo de trabajo.
-    @DAVILA 24-07-2025
-    Esta función detiene los procesadores con las variables especificadas,
-    limpia su estado y luego los reinicia para que estén listos para el flujo de trabajo.
-    :param *processor_configs: Tuplas de (id_processor, name_variable) o diccionarios con las configuraciones.
+    :param *processor_configs: Tuplas de (id_processor, name) o diccionarios con las configuraciones.
     :param **kwargs: Para compatibilidad con llamadas usando processor_configs=
     :return: None
     """
@@ -153,16 +141,91 @@ def prepare_processor_state(*processor_configs, **kwargs):
     
     # Normalizar las configuraciones a diccionarios
     normalized_configs = []
-    for config in configs_to_process:
+    for i, config in enumerate(configs_to_process):
         if isinstance(config, tuple) and len(config) == 2:
             normalized_configs.append({
                 'id_processor': config[0],
-                'name_variable': config[1]
+                'name': config[1]
             })
         elif isinstance(config, dict):
-            normalized_configs.append(config)
+            name = config.get('name', f'Processor_{i+1}')
+            normalized_configs.append({
+                'id_processor': config['id_processor'],
+                'name': name
+            })
+        elif isinstance(config, str):  # Solo ID, generar nombre automático
+            normalized_configs.append({
+                'id_processor': config,
+                'name': f'Processor_{i+1}'
+            })
         else:
-            raise ValueError(f"Invalid processor configuration: {config}. Expected tuple (id_processor, name_variable) or dict.")
+            raise ValueError(f"Invalid processor configuration: {config}. Expected tuple (id_processor, name), dict, or string.")
+    
+    logging.info(f"Starting {len(normalized_configs)} initial processor(s) to trigger NiFi flow...")
+    
+    # 1. Iniciar todos los procesadores
+    for config in normalized_configs:
+        id_processor = config['id_processor']
+        name = config['name']
+        
+        running_processor = funciones_nifi.update_processor_status(id_processor, "RUNNING", token, url_nifi_api, verify=False)
+        logging.info(f"{running_processor.status_code} - {running_processor.reason} - {name} ({id_processor}) started")
+    
+    # Esperar 15 segundos para que el flujo se inicie
+    logging.info("Waiting 15 seconds for NiFi flow to initialize...")
+    funciones_nifi.pause(15)
+
+    # 2. Detener todos los procesadores
+    logging.info("Stopping processors...")
+    for config in normalized_configs:
+        id_processor = config['id_processor']
+        name = config['name']
+        
+        stopped_processor = funciones_nifi.update_processor_status(id_processor, "STOPPED", token, url_nifi_api)
+        logging.info(f"{stopped_processor.status_code} - {stopped_processor.reason} - {name} ({id_processor}) stopped")
+
+def prepare_processor_state(*processor_configs, **kwargs):
+    """ Prepara múltiples procesadores de NiFi para el flujo de trabajo.
+    @DAVILA 24-07-2025 - Mejorado con nombres descriptivos
+    Esta función detiene los procesadores con las variables especificadas,
+    limpia su estado y luego los reinicia para que estén listos para el flujo de trabajo.
+    :param *processor_configs: Tuplas de (id_processor, name_variable, name) o diccionarios con las configuraciones.
+    :param **kwargs: Para compatibilidad con llamadas usando processor_configs=
+    :return: None
+    """
+    # Si se pasa como keyword argument
+    if 'processor_configs' in kwargs:
+        if isinstance(kwargs['processor_configs'], list):
+            configs_to_process = kwargs['processor_configs']
+        else:
+            configs_to_process = [kwargs['processor_configs']]
+    else:
+        configs_to_process = processor_configs
+    
+    # Normalizar las configuraciones a diccionarios
+    normalized_configs = []
+    for i, config in enumerate(configs_to_process):
+        if isinstance(config, tuple) and len(config) == 3:
+            normalized_configs.append({
+                'id_processor': config[0],
+                'name_variable': config[1],
+                'name': config[2]
+            })
+        elif isinstance(config, tuple) and len(config) == 2:
+            normalized_configs.append({
+                'id_processor': config[0],
+                'name_variable': config[1],
+                'name': f'Processor_{i+1}'
+            })
+        elif isinstance(config, dict):
+            name = config.get('name', f'Processor_{i+1}')
+            normalized_configs.append({
+                'id_processor': config['id_processor'],
+                'name_variable': config['name_variable'],
+                'name': name
+            })
+        else:
+            raise ValueError(f"Invalid processor configuration: {config}. Expected tuple (id_processor, name_variable) or (id_processor, name_variable, name) or dict.")
     
     logging.info(f"Preparing {len(normalized_configs)} processor(s) for workflow...")
     
@@ -171,58 +234,90 @@ def prepare_processor_state(*processor_configs, **kwargs):
     for config in normalized_configs:
         id_processor = config['id_processor']
         name_variable = config['name_variable']
+        name = config['name']
         
         stopped_processor = funciones_nifi.update_processor_status(id_processor, "STOPPED", token, url_nifi_api)
-        logging.info(f"{stopped_processor.status_code} - {stopped_processor.reason} Processor {id_processor} with variable {name_variable} stopped")
+        logging.info(f"{stopped_processor.status_code} - {stopped_processor.reason} - {name} ({name_variable}) stopped")
     
     # 2. Limpiar el estado de todos los procesadores
     logging.info("Step 2: Clearing state for all processors...")
     for config in normalized_configs:
         id_processor = config['id_processor']
         name_variable = config['name_variable']
+        name = config['name']
         
         clear_processor = funciones_nifi.clear_processor_state(url_nifi_api, id_processor, token, verify=False)
-        logging.info(f"{clear_processor.status_code} - {clear_processor.reason} Processor {id_processor} with variable {name_variable} state cleared")
+        logging.info(f"{clear_processor.status_code} - {clear_processor.reason} - {name} ({name_variable}) state cleared")
     
     # 3. Iniciar todos los procesadores
     logging.info("Step 3: Starting all processors...")
     for config in normalized_configs:
         id_processor = config['id_processor']
         name_variable = config['name_variable']
+        name = config['name']
         
         running_processor = funciones_nifi.update_processor_status(id_processor, "RUNNING", token, url_nifi_api, verify=False)
-        logging.info(f"{running_processor.status_code} - {running_processor.reason} Processor {id_processor} with variable {name_variable} started")
+        logging.info(f"{running_processor.status_code} - {running_processor.reason} - {name} ({name_variable}) started")
     
     logging.info("All processors have been prepared successfully!")
 
-def prepare_counter(*id_counters, **kwargs):
-    """ Prepara el contador de NiFi para el flujo de trabajo.
-    @DAVILA 24-07-2025
-    Esta función reinicia el contador con el ID id_counter para que esté listo para el flujo de trabajo.
-    :param *id_counters: IDs de los contadores a preparar.
-    :param **kwargs: Para compatibilidad con llamadas usando id_counters=
+def prepare_counter(*counter_configs, **kwargs):
+    """ Prepara los contadores de NiFi para el flujo de trabajo.
+    @DAVILA 24-07-2025 - Mejorado con nombres descriptivos
+    Esta función reinicia los contadores especificados para que estén listos para el flujo de trabajo.
+    :param *counter_configs: Tuplas de (id_counter, name) o diccionarios con las configuraciones.
+    :param **kwargs: Para compatibilidad con llamadas usando counter_configs=
     :return: None
     """
     # Si se pasa como keyword argument
-    if 'id_counters' in kwargs:
-        if isinstance(kwargs['id_counters'], list):
-            counters_to_process = kwargs['id_counters']
+    if 'counter_configs' in kwargs:
+        if isinstance(kwargs['counter_configs'], list):
+            configs_to_process = kwargs['counter_configs']
         else:
-            counters_to_process = [kwargs['id_counters']]
+            configs_to_process = [kwargs['counter_configs']]
     else:
-        counters_to_process = id_counters
+        configs_to_process = counter_configs
     
-    for id_counter in counters_to_process:
-        # 1. Reiniciar el contador con el ID id_counter
+    # Normalizar las configuraciones a diccionarios
+    normalized_configs = []
+    for i, config in enumerate(configs_to_process):
+        if isinstance(config, tuple) and len(config) == 2:
+            normalized_configs.append({
+                'id_counter': config[0],
+                'name': config[1]
+            })
+        elif isinstance(config, dict):
+            name = config.get('name', f'Counter_{i+1}')
+            normalized_configs.append({
+                'id_counter': config['id_counter'],
+                'name': name
+            })
+        elif isinstance(config, str):  # Solo ID, generar nombre automático
+            normalized_configs.append({
+                'id_counter': config,
+                'name': f'Counter_{i+1}'
+            })
+        else:
+            raise ValueError(f"Invalid counter configuration: {config}. Expected tuple (id_counter, name), dict, or string.")
+    
+    logging.info(f"Preparing {len(normalized_configs)} counter(s) for workflow...")
+    
+    for config in normalized_configs:
+        id_counter = config['id_counter']
+        name = config['name']
+        
+        # Reiniciar el contador
         reset_counter = funciones_nifi.reset_counter(url_nifi_api, id_counter, token, verify=False)
-        logging.info(f"{reset_counter.status_code} - {reset_counter.reason} Counter with ID {id_counter} reset")
+        logging.info(f"{reset_counter.status_code} - {reset_counter.reason} - {name} counter ({id_counter}) reset")
+    
+    logging.info("All counters have been prepared successfully!")
 
 def wait_for_update_state_processor(*processor_configs, **kwargs):
     """ Espera hasta que los procesadores con las variables especificadas alcancen el valor '1'.
-    @DAVILA 24-07-2025
+    @DAVILA 24-07-2025 - Mejorado con nombres descriptivos
     Esta función verifica el estado de múltiples procesadores y espera hasta que se cumplan las condiciones de
     UpdateAttribute, es decir, que el valor de las variables especificadas sea igual a '1'.
-    :param *processor_configs: Tuplas de (id_processor, name_variable) o diccionarios con las configuraciones.
+    :param *processor_configs: Tuplas de (id_processor, name_variable, name) o diccionarios con las configuraciones.
     :param **kwargs: Para compatibilidad con llamadas usando processor_configs=
     :return: None
     """
@@ -237,16 +332,28 @@ def wait_for_update_state_processor(*processor_configs, **kwargs):
     
     # Normalizar las configuraciones a diccionarios
     normalized_configs = []
-    for config in configs_to_process:
-        if isinstance(config, tuple) and len(config) == 2:
+    for i, config in enumerate(configs_to_process):
+        if isinstance(config, tuple) and len(config) == 3:
             normalized_configs.append({
                 'id_processor': config[0],
-                'name_variable': config[1]
+                'name_variable': config[1],
+                'name': config[2]
+            })
+        elif isinstance(config, tuple) and len(config) == 2:
+            normalized_configs.append({
+                'id_processor': config[0],
+                'name_variable': config[1],
+                'name': f'Processor_{i+1}'
             })
         elif isinstance(config, dict):
-            normalized_configs.append(config)
+            name = config.get('name', f'Processor_{i+1}')
+            normalized_configs.append({
+                'id_processor': config['id_processor'],
+                'name_variable': config['name_variable'],
+                'name': name
+            })
         else:
-            raise ValueError(f"Invalid processor configuration: {config}. Expected tuple (id_processor, name_variable) or dict.")
+            raise ValueError(f"Invalid processor configuration: {config}. Expected tuple (id_processor, name_variable) or (id_processor, name_variable, name) or dict.")
     
     logging.info(f"Monitoring {len(normalized_configs)} processor(s), waiting for state = '1'...")
     
@@ -255,14 +362,16 @@ def wait_for_update_state_processor(*processor_configs, **kwargs):
     for config in normalized_configs:
         id_processor = config['id_processor']
         name_variable = config['name_variable']
+        name = config['name']
         
         estado_inicial = funciones_nifi.get_processor_state(url_nifi_api, id_processor, token, verify=False)
         valor_inicial = funciones_nifi.parse_state(estado_inicial, name_variable)
         initial_states[id_processor] = {
             'name_variable': name_variable,
+            'name': name,
             'initial_value': valor_inicial
         }
-        logging.info(f"Initial state for processor {id_processor} ({name_variable}): {valor_inicial}")
+        logging.info(f"Initial state for {name} ({name_variable}): {valor_inicial}")
     
     # Monitorear cambios
     processors_pending = set(config['id_processor'] for config in normalized_configs)
@@ -270,16 +379,16 @@ def wait_for_update_state_processor(*processor_configs, **kwargs):
     while processors_pending:
         for id_processor in list(processors_pending):
             name_variable = initial_states[id_processor]['name_variable']
-            valor_inicial = initial_states[id_processor]['initial_value']
+            name = initial_states[id_processor]['name']
             
             estado_actual = funciones_nifi.get_processor_state(url_nifi_api, id_processor, token, verify=False)
             valor_actual = funciones_nifi.parse_state(estado_actual, name_variable)
             
             if valor_actual == '1':
-                logging.info(f"State completed for processor {id_processor} ({name_variable}): {valor_actual}")
+                logging.info(f"State completed for {name} ({name_variable}): {valor_actual}")
                 processors_pending.remove(id_processor)
             else:
-                logging.info(f"Waiting for processor {id_processor} ({name_variable}): {valor_actual} (waiting for '1')")
+                logging.info(f"Waiting for {name} ({name_variable}): {valor_actual} (waiting for '1')")
         
         if processors_pending:
             logging.info(f"Still waiting for {len(processors_pending)} processor(s)...")
@@ -375,7 +484,6 @@ def wait_for_update_counters(*counter_pairs, **kwargs):
     
     logging.info("All counter pairs have matched successfully!")
 
-
 with DAG(dag_id = DAG_ID,
          description=DAG_DESCRIPTION,
          schedule_interval=DAG_SCHEDULE,
@@ -389,66 +497,107 @@ with DAG(dag_id = DAG_ID,
         star_task = EmptyOperator(task_id="inicia_proceso")
         end_task = EmptyOperator(task_id="finaliza_proceso")
 
-    
 
-
-        prepare_multiple_processors_dict = PythonOperator(task_id='preparar_procesadores_multiples',python_callable=prepare_processor_state,op_kwargs={
-            'processor_configs': [
-                {'id_processor': processor_loop_invoke_documents, 'name_variable': 'no_has_next'},
-                {'id_processor': processor_loop_invoke_clients, 'name_variable': 'no_has_next'},
-                {'id_processor': processor_loop_invoke_variants, 'name_variable': 'no_has_next'},
-                {'id_processor': processor_loop_invoke_products, 'name_variable': 'no_has_next'}
-                ]},
-                execution_timeout=timedelta(minutes=10))
         
-        prepare_all_counters = PythonOperator(task_id='preparar_contadores',python_callable=prepare_counter, op_kwargs={
-            'id_counters': [count_split_documents,count_upserts_documents,
-                            count_split_clients, count_upserts_clients,
-                            count_split_variants, count_upserts_variants,
-                            count_split_products, count_upserts_products
-                                ]
-        },execution_timeout =timedelta(minutes=10))
-
-        running_processor_intial = PythonOperator(task_id='correr_procesadores_iniciales', python_callable=startup, op_kwargs={
-            'id_processors': [processor_initial_documents,
-                              processor_initial_clients,
-                              processor_initial_variants,
-                              processor_initial_products
-                              ]
-        }, execution_timeout=timedelta(minutes=10))
-        
-        wait_final_process_loop_invoke = PythonOperator(task_id='esperar_final_loop_invoke', python_callable=wait_for_update_state_processor, op_kwargs={
+        # Preparar procesadores con nombres descriptivos
+        prepare_multiple_processors_named = PythonOperator(task_id='preparar_procesadores_multiples',python_callable=prepare_processor_state,op_kwargs={
             'processor_configs': [
-                {'id_processor': processor_loop_invoke_documents, 'name_variable': 'no_has_next'},
-                {'id_processor': processor_loop_invoke_clients, 'name_variable': 'no_has_next'},
-                {'id_processor': processor_loop_invoke_variants, 'name_variable': 'no_has_next'},
-                {'id_processor': processor_loop_invoke_products, 'name_variable': 'no_has_next'}
-            ]}, execution_timeout =timedelta(minutes=10))
+                {'id_processor': processor_loop_invoke_documents, 'name_variable': 'no_has_next', 'name': 'Documents  Invoke'},
+                {'id_processor': processor_loop_invoke_clients, 'name_variable': 'no_has_next', 'name': 'Clients Loop Invoke'},
+                {'id_processor': processor_loop_invoke_variants, 'name_variable': 'no_has_next', 'name': 'Variants Loop Invoke'},
+                {'id_processor': processor_loop_invoke_products, 'name_variable': 'no_has_next', 'name': 'Products Loop Invoke'},
+                {'id_processor': processor_loop_invoke_product_types, 'name_variable': 'no_has_next', 'name': 'Product Types Loop Invoke'},
+                {'id_processor': processor_loop_invoke_document_types, 'name_variable': 'no_has_next', 'name': 'Document Types Loop Invoke'},
+                {'id_processor': processor_loop_invoke_checkout, 'name_variable': 'no_has_next', 'name': 'Checkout Loop Invoke'}
+                ]
+            },execution_timeout=timedelta(minutes=10))
+        
+        # Preparar contadores con nombres descriptivos
+        prepare_all_counters_named = PythonOperator(task_id='preparar_contadores',python_callable=prepare_counter,op_kwargs={
+            'counter_configs': [
+                (count_split_documents, 'count_split_documents'),
+                (count_upserts_documents, 'count_upserts_documents'),
+                (count_split_clients, 'count_split_clients'),
+                (count_upserts_clients, 'count_upserts_clients'),
+                (count_split_variants, 'count_split_variants'),
+                (count_upserts_variants, 'count_upserts_variants'),
+                (count_split_products, 'count_split_products'),
+                (count_upserts_products, 'count_upserts_products'),
+                (count_split_details, 'count_split_details'),
+                (count_upserts_details, 'count_upserts_details'),
+                (count_split_product_types, 'count_split_product_types'),
+                (count_upserts_product_types, 'count_upserts_product_types'),
+                (count_split_document_types, 'count_split_document_types'),
+                (count_upserts_document_types, 'count_upserts_document_types'),
+                (count_split_checkout, 'count_split_checkout'),
+                (count_upserts_checkout, 'count_upserts_checkout')
+                ]
+                },execution_timeout=timedelta(minutes=10))
+
+
+        # Iniciar procesadores con nombres descriptivos
+        running_processor_initial_named = PythonOperator(task_id='correr_procesadores_iniciales',python_callable=startup,op_kwargs={
+            'processor_configs': [
+                (processor_initial_documents, 'Initial Documents Processor'),
+                (processor_initial_clients, 'Initial Clients Processor'),
+                (processor_initial_variants, 'Initial Variants Processor'),
+                (processor_initial_products, 'Initial Products Processor'),
+                (processor_initial_product_types, 'Initial Product Types Processor'),
+                (processor_initial_document_types, 'Initial Document Types Processor'),
+                (processor_initial_checkout, 'Initial Checkout Processor')
+                ]
+            },execution_timeout=timedelta(minutes=10))
+        
+        
+        # Esperar estado de procesadores con nombres descriptivos
+        wait_final_process_loop_invoke_named = PythonOperator(task_id='esperar_final_loop_invoke',python_callable=wait_for_update_state_processor,op_kwargs={
+            'processor_configs': [
+                {'id_processor': processor_loop_invoke_documents, 'name_variable': 'no_has_next', 'name': 'Documents Loop Invoke'},
+                {'id_processor': processor_loop_invoke_clients, 'name_variable': 'no_has_next', 'name': 'Clients Loop Invoke'},
+                {'id_processor': processor_loop_invoke_variants, 'name_variable': 'no_has_next', 'name': 'Variants Loop Invoke'},
+                {'id_processor': processor_loop_invoke_products, 'name_variable': 'no_has_next', 'name': 'Products Loop Invoke'},
+                {'id_processor': processor_loop_invoke_product_types, 'name_variable': 'no_has_next', 'name': 'Product Types Loop Invoke'},
+                {'id_processor': processor_loop_invoke_document_types, 'name_variable': 'no_has_next', 'name': 'Document Types Loop Invoke'},
+                {'id_processor': processor_loop_invoke_checkout, 'name_variable': 'no_has_next', 'name': 'Checkout Loop Invoke'}
+                ]
+            },execution_timeout=timedelta(minutes=10))
         
         wait_all_counter_pairs_named = PythonOperator(task_id='esperar_final_todos_contadores',python_callable=wait_for_update_counters,op_kwargs={
-            'counter_pairs': [{
-                'id_counter1': count_split_documents,
-                'id_counter2': count_upserts_documents,
-                'pair_name': 'Documents'},
-                {
-                'id_counter1': count_split_clients,
-                'id_counter2': count_upserts_clients,
-                'pair_name': 'Clients'},
-                {
-                'id_counter1': count_split_variants,
-                'id_counter2': count_upserts_variants,
-                'pair_name': 'Variants'},
-                {
-                'id_counter1': count_split_products,
-                'id_counter2': count_upserts_products,
-                'pair_name': 'Products'
-                }  
+            'counter_pairs': [
+                {'id_counter1': count_split_clients,'id_counter2': count_upserts_clients,'pair_name': 'Clients'},
+                {'id_counter1': count_split_variants,'id_counter2': count_upserts_variants,'pair_name': 'Variants'},
+                {'id_counter1': count_split_products,'id_counter2': count_upserts_products,'pair_name': 'Products'},
+                {'id_counter1': count_split_product_types,'id_counter2': count_upserts_product_types,'pair_name': 'Product Types'},
+                {'id_counter1': count_split_document_types,'id_counter2': count_upserts_document_types,'pair_name': 'Document Types'},
+                {'id_counter1': count_split_checkout,'id_counter2': count_upserts_checkout,'pair_name': 'Checkout'}
                 ]
             },
-            execution_timeout=timedelta(minutes=10)
-)
+            execution_timeout=timedelta(minutes=10))
+        
+        # proceso aparte para documents, ya que luego se ejecutará el flujo de detalles
+        
+        wait_all_counter_documents = PythonOperator(task_id='esperar_final_contador_documents',python_callable=wait_for_update_counters,op_kwargs={
+            'counter_pairs': [
+                {'id_counter1': count_split_documents, 'id_counter2': count_upserts_documents, 'pair_name': 'Documents'}
+                ]
+            },execution_timeout=timedelta(minutes=10))
+        
+        running_processor_initial_details = PythonOperator(task_id='correr_procesador_inicial_details',python_callable=startup,op_kwargs={
+            'processor_configs': [
+                (processor_initial_details, 'Initial Details Processor')
+                ]
+            },execution_timeout=timedelta(minutes=10))
+        
+        wait_count_details = PythonOperator(task_id='esperar_final_contador_details',python_callable=wait_for_update_counters,op_kwargs={
+            'counter_pairs': [
+                {'id_counter1': count_split_details, 'id_counter2': count_upserts_details, 'pair_name': 'Details'}
+                ]
+            },execution_timeout=timedelta(minutes=10))
+        
 
-        star_task >> prepare_multiple_processors_dict >> prepare_all_counters >> running_processor_intial
-        running_processor_intial >> wait_final_process_loop_invoke >> wait_all_counter_pairs_named >> end_task
+        star_task >> prepare_multiple_processors_named >> prepare_all_counters_named >> running_processor_initial_named
+        running_processor_initial_named >> wait_final_process_loop_invoke_named >> [wait_all_counter_pairs_named,wait_all_counter_documents]
+        wait_all_counter_pairs_named >> end_task
+        wait_all_counter_documents >> running_processor_initial_details >> wait_count_details >> end_task
 
 # [END instantiate_dag]

@@ -17,11 +17,6 @@ services:
       # Configuración de timezone
       - TZ=America/Santiago
       
-    deploy:
-      resources:
-        limits:
-          cpus: '0.95'
-          memory: 4G
       
     volumes:
       # Drivers JDBC personalizados (RUTA CORREGIDA)
