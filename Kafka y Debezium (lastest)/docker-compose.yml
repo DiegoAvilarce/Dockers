@@ -94,6 +94,18 @@ services:
     networks:
       - debezium_net_v2
 
+  debezium-ui:
+    image: debezium/debezium-ui:latest
+    container_name: debezium-ui
+    environment:
+      KAFKA_CONNECT_URIS: "http://debezium:8083"
+    ports:
+      - "8085:8080"  # Puerto para acceder a Debezium UI desde tu máquina
+    depends_on:
+      - debezium
+    networks:
+      - debezium_net_v2
+
 volumes:
   postgres_data:
 
