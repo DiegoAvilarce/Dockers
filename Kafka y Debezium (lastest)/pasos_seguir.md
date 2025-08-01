@@ -48,7 +48,7 @@ curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" 
     "database.dbname": "[nombre_bd]",
     "database.server.name": "cdc_oracle_server",
     "table.include.list": "SCHEMA.TABLA_EJEMPLO",
-    "snapshot.mode": "no_data",
+    "snapshot.mode": "initial",
     "topic.prefix": "cdc_oracle_server",
     "database.connection.adapter": "logminer",
     "log.mining.strategy": "online_catalog",
