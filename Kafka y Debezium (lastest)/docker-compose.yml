@@ -16,6 +16,8 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_KRAFT_CLUSTER_ID=abcdefghijklmnopqrstuv
+    volumes:
+      - kafka_data:/bitnami/kafka
     networks:
       - debezium_net_v2
 
@@ -55,6 +57,9 @@ services:
     depends_on: [kafka]
     ports:
       - 8083:8083
+    volumes:
+      - debezium_data:/kafka/connect
+      - debezium_logs:/kafka/logs
     networks:
       - debezium_net_v2
 
@@ -67,6 +72,8 @@ services:
     ports:
       - 8081:8081
     depends_on: [kafka]
+    volumes:
+      - schema_registry_data:/var/lib/schema-registry
     networks:
       - debezium_net_v2
 
@@ -107,7 +114,11 @@ services:
       - debezium_net_v2
 
 volumes:
+  kafka_data:
   postgres_data:
+  debezium_data:
+  debezium_logs:
+  schema_registry_data:
 
 networks:
   debezium_net_v2:
