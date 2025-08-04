@@ -121,10 +121,11 @@ count_upserts_checkout = 'ba79699b-4f78-388a-9f52-065f3699792d'
 # Definir funciones Python
 
 def startup(*processor_configs, **kwargs):
-    """ Inicia el flujo inicial de NiFi con múltiples procesadores.   
-    @DAVILA 24-07-2025 - Mejorado con nombres descriptivos
-    Esta función inicia los procesadores iniciales y luego los detiene,
-    ya que no es necesario que sigan corriendo una vez que se ha iniciado el flujo.
+    """ Inicia el flujo inicial de NiFi con múltiples procesadores usando RUN_ONCE.   
+    @DAVILA 24-07-2025 - Mejorado con nombres descriptivos y RUN_ONCE
+    Esta función ejecuta los procesadores una sola vez usando RUN_ONCE.
+    Con RUN_ONCE, los procesadores se detendrán automáticamente después de ejecutarse,
+    eliminando la necesidad de esperar y detenerlos manualmente.
     Se utiliza para preparar el flujo de trabajo de NiFi antes de ejecutar otras tareas.
     :param *processor_configs: Tuplas de (id_processor, name) o diccionarios con las configuraciones.
     :param **kwargs: Para compatibilidad con llamadas usando processor_configs=
@@ -161,28 +162,17 @@ def startup(*processor_configs, **kwargs):
         else:
             raise ValueError(f"Invalid processor configuration: {config}. Expected tuple (id_processor, name), dict, or string.")
     
-    logging.info(f"Starting {len(normalized_configs)} initial processor(s) to trigger NiFi flow...")
+    logging.info(f"Executing {len(normalized_configs)} processor(s) with RUN_ONCE strategy...")
     
-    # 1. Iniciar todos los procesadores
+    # Ejecutar todos los procesadores con RUN_ONCE (se detendrán automáticamente después de una ejecución)
     for config in normalized_configs:
         id_processor = config['id_processor']
         name = config['name']
         
-        running_processor = funciones_nifi.update_processor_status(id_processor, "RUNNING", token, url_nifi_api, verify=False)
-        logging.info(f"{running_processor.status_code} - {running_processor.reason} - {name} ({id_processor}) started")
+        running_processor = funciones_nifi.update_processor_status(id_processor, "RUN_ONCE", token, url_nifi_api, verify=False)
+        logging.info(f"{running_processor.status_code} - {running_processor.reason} - {name} ({id_processor}) executed with RUN_ONCE")
     
-    # Esperar 15 segundos para que el flujo se inicie
-    logging.info("Waiting 15 seconds for NiFi flow to initialize...")
-    funciones_nifi.pause(15)
-
-    # 2. Detener todos los procesadores
-    logging.info("Stopping processors...")
-    for config in normalized_configs:
-        id_processor = config['id_processor']
-        name = config['name']
-        
-        stopped_processor = funciones_nifi.update_processor_status(id_processor, "STOPPED", token, url_nifi_api)
-        logging.info(f"{stopped_processor.status_code} - {stopped_processor.reason} - {name} ({id_processor}) stopped")
+    logging.info("All processors executed with RUN_ONCE strategy. They will stop automatically after completion.")
 
 def prepare_processor_state(*processor_configs, **kwargs):
     """ Prepara múltiples procesadores de NiFi para el flujo de trabajo.

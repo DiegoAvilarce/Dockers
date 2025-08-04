@@ -20,9 +20,9 @@ import davila_functions.nifi.principal as funciones_nifi
 
 
 
-TAGS = ["NiFI API BUK Chile"]
-DAG_ID = 'DAG_NiFi_API_BUK_Chile'
-DAG_DESCRIPTION = 'DAG que desencadena flujos de NiFi para guardar datos JSON obenidos por API de BUK Chile en una base de datos PostgreSQL de BI y Oracle de TI Cramer.'
+TAGS = ["NiFI API BUK Chile y Perú"]
+DAG_ID = 'DAG_NiFi_API_BUK_Chile_Peru'
+DAG_DESCRIPTION = 'DAG que desencadena flujos de NiFi para guardar datos JSON obenidos por API de BUK Chile y Perú en una base de datos PostgreSQL de BI y Oracle de TI Cramer.'
 
 # que empiece a las 7,12,16 en horario UTC -3 (santiago de chile)
 DAG_SCHEDULE =  '0 7,12,16 * * *'  # Cada día a las 7:00, 12:00 y 16:00 horas
@@ -87,6 +87,14 @@ processor_initial_overtime_types = '8e165f9c-8cfe-3a21-a696-ab4324fe8a6e'
 processor_initial_process_periods = '41987458-0368-330d-04b8-cf241c14a89a'
 processor_initial_roles = '1c14b065-ceb4-31f8-dad6-78997937aa0d'
 
+processor_initial_employees_peru = '7b4d5964-f5a0-35fa-1ef8-9a9b031b9554'
+processor_initial_areas_peru = '337f1754-cc2f-3a4d-1ba0-90be97520d02'
+processor_initial_companies_peru = '7a83ef65-14f7-338e-594b-637d6627e303'
+processor_initial_overtime_peru = '19cea901-ddc2-3ce6-c087-9d6e0e5bf4d2'
+processor_initial_overtime_types_peru = '4be9f4c7-8c36-3739-93b8-04874096d4ae'
+processor_initial_process_periods_peru = '40b403d1-45d4-3139-21a1-c6bab4cd63fa'
+processor_initial_roles_peru = '4418e5cd-c311-3c57-7aff-d72519d8e48f'
+
 
 processor_loop_invoke_employees = '1f331143-9a62-3440-60b4-7cf455f6b6f6'
 processor_loop_invoke_areas = 'caceeafe-4d04-3eac-877c-88618c78b650'
@@ -94,12 +102,25 @@ processor_loop_invoke_overtime = '6beb2634-f09b-33b3-8ae8-b6d00eb83ea9'
 processor_loop_invoke_process_periods = '2a1a48c1-ce14-33ed-7251-4713b80c7c62'
 processor_loop_invoke_roles = '3925a293-24b5-3451-ba60-bebdeea1ff93'
 
+processor_loop_invoke_employees_peru = 'c65ad3e2-4854-3291-948f-b85b91214faa'
+processor_loop_invoke_areas_peru = '40f86776-9f4f-3b6b-474b-d1d5151802a5'
+processor_loop_invoke_overtime_peru = 'fdf942c9-dea4-36ae-975a-8be87a6b6a6f'
+processor_loop_invoke_process_periods_peru = '3f086caf-8769-34fe-5454-59cc2c5397bc'
+processor_loop_invoke_roles_peru = 'dd2cd84f-985d-3944-b55d-6538f405c824'
+
 count_split_employees = 'f175c1de-f869-3e16-a027-7dd52bb86166'
 count_split_jobs = '71b1beee-4741-3617-a03b-c80570ffc6f4'
 count_split_areas = '819bba42-79d8-31ea-b9bf-6568171477ab'
 count_split_overtime = 'b874ee94-ace7-328f-aa6a-d2a5303a256c'
 count_split_process_periods = '90d80881-0acd-3782-a80a-364f60e49d48'
 count_split_roles = '62586b42-2548-3854-9558-a4109ab52ff6'
+
+count_split_employees_peru = 'ebb70659-522f-3e68-9aea-cfcc268d8795'
+count_split_jobs_peru = 'e8edbd0a-8617-3b4b-97a2-1f8547cc2767'
+count_split_areas_peru = 'a7a7d279-8b07-335b-a194-eb57c815a78b'
+count_split_overtime_peru = '664e6dbe-ba97-3897-b2b9-83e2fa8f05ec'
+count_split_process_periods_peru = '63089b24-72b7-3fd1-93a0-8f5d7c98cf0e'
+count_split_roles_peru = '58009d81-73b1-3e72-90bb-07580ea5b1e7'
 
 count_upserts_employees = 'fe4c56d7-7bfb-3b51-a74b-524710cb899d'
 count_upserts_jobs = '54b0691b-6363-36bb-8186-0e774c3bfd14'
@@ -110,14 +131,24 @@ count_upserts_overtime = 'd3e0481d-294d-31c9-9dde-efc5f5896db5'
 count_upserts_process_periods = '40058cee-9684-3e64-bbbb-412033377c2b'
 count_upserts_roles = '101bd8c7-9796-36b7-9ae3-52dde67d7f42'
 
+count_upserts_employees_peru = '550d910c-bdcf-343b-9b1d-72c9d4f6feee'
+count_upserts_jobs_peru = '9e2fcb9b-cf70-391f-aa0b-97bfc78bc143'
+count_upserts_areas_peru = '4195104d-1c35-3f96-9d9c-59ae92028ae9'
+count_upserts_boss_peru = 'd157f8cd-e667-300d-9679-9c99246fc392'
+count_upserts_current_job_peru = '1cee2261-579b-3951-b21d-730d44c3aaf0'
+count_upserts_overtime_peru = '2acb5fe0-fc65-3f8f-a77c-08966e469cce'
+count_upserts_process_periods_peru = '73217785-5a0e-30b8-803f-1cba509200f3'
+count_upserts_roles_peru = 'abe15f58-8555-3837-a9aa-c37da8d79cdd'
+
 
 # Definir funciones Python
 
 def startup(*processor_configs, **kwargs):
-    """ Inicia el flujo inicial de NiFi con múltiples procesadores.   
-    @DAVILA 24-07-2025 - Mejorado con nombres descriptivos
-    Esta función inicia los procesadores iniciales y luego los detiene,
-    ya que no es necesario que sigan corriendo una vez que se ha iniciado el flujo.
+    """ Inicia el flujo inicial de NiFi con múltiples procesadores usando RUN_ONCE.   
+    @DAVILA 24-07-2025 - Mejorado con nombres descriptivos y RUN_ONCE
+    Esta función ejecuta los procesadores una sola vez usando RUN_ONCE.
+    Con RUN_ONCE, los procesadores se detendrán automáticamente después de ejecutarse,
+    eliminando la necesidad de esperar y detenerlos manualmente.
     Se utiliza para preparar el flujo de trabajo de NiFi antes de ejecutar otras tareas.
     :param *processor_configs: Tuplas de (id_processor, name) o diccionarios con las configuraciones.
     :param **kwargs: Para compatibilidad con llamadas usando processor_configs=
@@ -154,28 +185,17 @@ def startup(*processor_configs, **kwargs):
         else:
             raise ValueError(f"Invalid processor configuration: {config}. Expected tuple (id_processor, name), dict, or string.")
     
-    logging.info(f"Starting {len(normalized_configs)} initial processor(s) to trigger NiFi flow...")
+    logging.info(f"Executing {len(normalized_configs)} processor(s) with RUN_ONCE strategy...")
     
-    # 1. Iniciar todos los procesadores
+    # Ejecutar todos los procesadores con RUN_ONCE (se detendrán automáticamente después de una ejecución)
     for config in normalized_configs:
         id_processor = config['id_processor']
         name = config['name']
         
-        running_processor = funciones_nifi.update_processor_status(id_processor, "RUNNING", token, url_nifi_api, verify=False)
-        logging.info(f"{running_processor.status_code} - {running_processor.reason} - {name} ({id_processor}) started")
+        running_processor = funciones_nifi.update_processor_status(id_processor, "RUN_ONCE", token, url_nifi_api, verify=False)
+        logging.info(f"{running_processor.status_code} - {running_processor.reason} - {name} ({id_processor}) executed with RUN_ONCE")
     
-    # Esperar 15 segundos para que el flujo se inicie
-    logging.info("Waiting 15 seconds for NiFi flow to initialize...")
-    funciones_nifi.pause(15)
-
-    # 2. Detener todos los procesadores
-    logging.info("Stopping processors...")
-    for config in normalized_configs:
-        id_processor = config['id_processor']
-        name = config['name']
-        
-        stopped_processor = funciones_nifi.update_processor_status(id_processor, "STOPPED", token, url_nifi_api)
-        logging.info(f"{stopped_processor.status_code} - {stopped_processor.reason} - {name} ({id_processor}) stopped")
+    logging.info("All processors executed with RUN_ONCE strategy. They will stop automatically after completion.")
 
 def prepare_processor_state(*processor_configs, **kwargs):
     """ Prepara múltiples procesadores de NiFi para el flujo de trabajo.
@@ -494,7 +514,7 @@ with DAG(dag_id = DAG_ID,
         
 
 
-        prepare_multiple_processors_named = PythonOperator(task_id='preparar_procesadores_multiples',python_callable=prepare_processor_state,op_kwargs={
+        prepare_multiple_processors_named_chile = PythonOperator(task_id='preparar_procesadores_multiples_chile',python_callable=prepare_processor_state,op_kwargs={
             'processor_configs': [
                 {'id_processor': processor_loop_invoke_employees, 'name_variable': 'no_has_next', 'name': 'Loop Invoke Employees'},
                 {'id_processor': processor_loop_invoke_areas, 'name_variable': 'no_has_next', 'name': 'Loop Invoke Areas'},
@@ -504,7 +524,17 @@ with DAG(dag_id = DAG_ID,
                 ]},
                 execution_timeout=timedelta(minutes=5))
         
-        prepare_all_counters_named = PythonOperator(task_id='preparar_contadores',python_callable=prepare_counter, op_kwargs={
+        prepare_multiple_processors_named_peru = PythonOperator(task_id='preparar_procesadores_multiples_peru',python_callable=prepare_processor_state,op_kwargs={
+            'processor_configs': [
+                {'id_processor': processor_loop_invoke_employees_peru, 'name_variable': 'no_has_next', 'name': 'Loop Invoke Employees Peru'},
+                {'id_processor': processor_loop_invoke_areas_peru, 'name_variable': 'no_has_next', 'name': 'Loop Invoke Areas Peru'},
+                {'id_processor': processor_loop_invoke_overtime_peru, 'name_variable': 'no_has_next', 'name': 'Loop Invoke Overtime Peru'},
+                {'id_processor': processor_loop_invoke_process_periods_peru, 'name_variable': 'no_has_next', 'name': 'Loop Invoke Process Periods Peru'},
+                {'id_processor': processor_loop_invoke_roles_peru, 'name_variable': 'no_has_next', 'name': 'Loop Invoke Roles Peru'}
+                ]},
+                execution_timeout=timedelta(minutes=5))
+        
+        prepare_all_counters_named_chile = PythonOperator(task_id='preparar_contadores_chile',python_callable=prepare_counter, op_kwargs={
             'counter_configs': [
                 {'id_counter': count_split_employees, 'name': 'count_split_employees'},
                 {'id_counter': count_upserts_employees, 'name': 'count_upserts_employees'},
@@ -521,8 +551,27 @@ with DAG(dag_id = DAG_ID,
                 {'id_counter': count_split_roles, 'name': 'count_split_roles'},
                 {'id_counter': count_upserts_roles, 'name': 'count_upserts_roles'}
             ]}, execution_timeout=timedelta(minutes=5))
+        
+        prepare_all_counters_named_peru = PythonOperator(task_id='preparar_contadores_peru',python_callable=prepare_counter, op_kwargs={
+            'counter_configs': [
+                {'id_counter': count_split_employees_peru, 'name': 'count_split_employees_peru'},
+                {'id_counter': count_upserts_employees_peru, 'name': 'count_upserts_employees_peru'},
+                {'id_counter': count_split_jobs_peru, 'name': 'count_split_jobs_peru'},
+                {'id_counter': count_upserts_jobs_peru, 'name': 'count_upserts_jobs_peru'},
+                {'id_counter': count_split_areas_peru, 'name': 'count_split_areas_peru'},
+                {'id_counter': count_upserts_areas_peru, 'name': 'count_upserts_areas_peru'},
+                {'id_counter': count_upserts_boss_peru, 'name': 'count_upserts_boss_peru'},
+                {'id_counter': count_upserts_current_job_peru, 'name': 'count_upserts_current_job_peru'},
+                {'id_counter': count_split_overtime_peru, 'name': 'count_split_overtime_peru'},
+                {'id_counter': count_upserts_overtime_peru, 'name': 'count_upserts_overtime_peru'},
+                {'id_counter': count_split_process_periods_peru, 'name': 'count_split_process_periods_peru'},
+                {'id_counter': count_upserts_process_periods_peru, 'name': 'count_upserts_process_periods_peru'},
+                {'id_counter': count_split_roles_peru, 'name': 'count_split_roles_peru'},
+                {'id_counter': count_upserts_roles_peru, 'name': 'count_upserts_roles_peru'}
+            ]}, execution_timeout=timedelta(minutes=5))
 
-        running_processor_initial_named = PythonOperator(task_id='correr_procesadores_iniciales', python_callable=startup, op_kwargs={
+
+        running_processor_initial_named_chile = PythonOperator(task_id='correr_procesadores_iniciales_chile', python_callable=startup, op_kwargs={
             'processor_configs': [
                 {'id_processor': processor_initial_employees, 'name': 'Processor Initial Employees'},
                 {'id_processor': processor_initial_areas, 'name': 'Processor Initial Areas'},
@@ -534,8 +583,20 @@ with DAG(dag_id = DAG_ID,
             ]
         }, execution_timeout=timedelta(minutes=5))
 
+        running_processor_initial_named_peru = PythonOperator(task_id='correr_procesadores_iniciales_peru', python_callable=startup, op_kwargs={
+            'processor_configs': [
+                {'id_processor': processor_initial_employees_peru, 'name': 'Processor Initial Employees Peru'},
+                {'id_processor': processor_initial_areas_peru, 'name': 'Processor Initial Areas Peru'},
+                {'id_processor': processor_initial_companies_peru, 'name': 'Processor Initial Companies Peru'},
+                {'id_processor': processor_initial_overtime_peru, 'name': 'Processor Initial Overtime Peru'},
+                {'id_processor': processor_initial_overtime_types_peru, 'name': 'Processor Initial Overtime Types Peru'},
+                {'id_processor': processor_initial_process_periods_peru, 'name': 'Processor Initial Process Periods Peru'},
+                {'id_processor': processor_initial_roles_peru, 'name': 'Processor Initial Roles Peru'}
+            ]
+        }, execution_timeout=timedelta(minutes=5))
+        
 
-        wait_final_process_loop_invoke_named = PythonOperator(task_id='esperar_final_loop_invoke', python_callable=wait_for_update_state_processor, op_kwargs={
+        wait_final_process_loop_invoke_named_chile = PythonOperator(task_id='esperar_final_loop_invoke_chile', python_callable=wait_for_update_state_processor, op_kwargs={
             'processor_configs': [
                 {'id_processor': processor_loop_invoke_employees, 'name_variable': 'no_has_next', 'name': 'Employees Loop Invoke'},    
                 {'id_processor': processor_loop_invoke_areas, 'name_variable': 'no_has_next', 'name': 'Areas Loop Invoke'},
@@ -544,9 +605,19 @@ with DAG(dag_id = DAG_ID,
                 {'id_processor': processor_loop_invoke_roles, 'name_variable': 'no_has_next', 'name': 'Roles Loop Invoke'}
             ]
         }, execution_timeout=timedelta(minutes=5))
+
+        wait_final_process_loop_invoke_named_peru = PythonOperator(task_id='esperar_final_loop_invoke_peru', python_callable=wait_for_update_state_processor, op_kwargs={
+            'processor_configs': [
+                {'id_processor': processor_loop_invoke_employees_peru, 'name_variable': 'no_has_next', 'name': 'Employees Loop Invoke Peru'},    
+                {'id_processor': processor_loop_invoke_areas_peru, 'name_variable': 'no_has_next', 'name': 'Areas Loop Invoke Peru'},
+                {'id_processor': processor_loop_invoke_overtime_peru, 'name_variable': 'no_has_next', 'name': 'Overtime Loop Invoke Peru'},
+                {'id_processor': processor_loop_invoke_process_periods_peru, 'name_variable': 'no_has_next', 'name': 'Process Periods Loop Invoke Peru'},
+                {'id_processor': processor_loop_invoke_roles_peru, 'name_variable': 'no_has_next', 'name': 'Roles Loop Invoke Peru'}
+            ]
+        }, execution_timeout=timedelta(minutes=5))
     
 
-        wait_all_counter_pairs_named = PythonOperator(task_id='esperar_todos_pares_contadores', python_callable=wait_for_update_counters, op_kwargs={
+        wait_all_counter_pairs_named_chile = PythonOperator(task_id='esperar_todos_pares_contadores_chile', python_callable=wait_for_update_counters, op_kwargs={
             'counter_pairs': [
                 {'id_counter1': count_split_employees, 'id_counter2': count_upserts_employees, 'pair_name': 'Employees'},
                 {'id_counter1': count_split_jobs, 'id_counter2': count_upserts_jobs, 'pair_name': 'Jobs'},
@@ -559,9 +630,25 @@ with DAG(dag_id = DAG_ID,
             ]
         }, execution_timeout=timedelta(minutes=5))
 
+        wait_all_counter_pairs_named_peru = PythonOperator(task_id='esperar_todos_pares_contadores_peru', python_callable=wait_for_update_counters, op_kwargs={
+            'counter_pairs': [
+                {'id_counter1': count_split_employees_peru, 'id_counter2': count_upserts_employees_peru, 'pair_name': 'Employees Peru'},
+                {'id_counter1': count_split_jobs_peru, 'id_counter2': count_upserts_jobs_peru, 'pair_name': 'Jobs Peru'},
+                {'id_counter1': count_split_employees_peru, 'id_counter2': count_upserts_current_job_peru, 'pair_name': 'Current Job Peru'},
+                {'id_counter1': count_split_jobs_peru, 'id_counter2': count_upserts_boss_peru, 'pair_name': 'Boss Peru'},
+                {'id_counter1': count_split_areas_peru, 'id_counter2': count_upserts_areas_peru, 'pair_name': 'Areas Peru'},
+                {'id_counter1': count_split_overtime_peru, 'id_counter2': count_upserts_overtime_peru, 'pair_name': 'Overtime Peru'},
+                {'id_counter1': count_split_process_periods_peru, 'id_counter2': count_upserts_process_periods_peru, 'pair_name': 'Process Periods Peru'},
+                {'id_counter1': count_split_roles_peru, 'id_counter2': count_upserts_roles_peru, 'pair_name': 'Roles Peru'}
+            ]
+        }, execution_timeout=timedelta(minutes=5))
 
-        star_task >> [prepare_multiple_processors_named, prepare_all_counters_named] >> running_processor_initial_named
-        running_processor_initial_named >> wait_final_process_loop_invoke_named >> wait_all_counter_pairs_named >> end_task
+
+        star_task >> [prepare_multiple_processors_named_chile, prepare_all_counters_named_chile] >> running_processor_initial_named_chile
+        running_processor_initial_named_chile >> wait_final_process_loop_invoke_named_chile >> wait_all_counter_pairs_named_chile >> end_task
+
+        star_task >> [prepare_multiple_processors_named_peru, prepare_all_counters_named_peru] >> running_processor_initial_named_peru
+        running_processor_initial_named_peru >> wait_final_process_loop_invoke_named_peru >> wait_all_counter_pairs_named_peru >> end_task
 
 
 # [END instantiate_dag]
