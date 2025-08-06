@@ -1,0 +1,23 @@
+CREATE TABLE api_bsale_syf.payment_types (
+    id INT,
+    href TEXT,
+    name TEXT,
+    isVirtual BOOLEAN,
+    isCheck BOOLEAN,
+    maxCheck FLOAT,
+    isCreditNote BOOLEAN,
+    isClientCredit BOOLEAN,
+    isCash BOOLEAN,
+    isCreditMemo BOOLEAN,
+    state BOOLEAN,
+    maxClientCuota INT,
+    ledgerAccount TEXT,
+    ledgerCode TEXT,
+    isAgreementBank BOOLEAN,
+    agreementCode TEXT,
+    payFormClassification INT,
+    payformCatalogId TEXT,
+    integratorId INT,
+    timestamp_nifi TIMESTAMPTZ,
+    PRIMARY KEY (id)
+);

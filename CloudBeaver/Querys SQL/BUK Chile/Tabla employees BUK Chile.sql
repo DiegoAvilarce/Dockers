@@ -64,8 +64,8 @@ CREATE TABLE api_buk_chile.employees (
     -- Campos complejos como JSONB
     custom_attributes JSONB,
     current_job JSONB,
-    jobs TEXT,
-    family_responsabilities TEXT,
+    jobs JSONB, --- en un UpdateRecord de NiFi ponemos /jobs con valor escapeJson(/jobs[0])
+    family_responsabilities JSONB, --escapeJson(/family_responsabilities[0])
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id)
 );
@@ -78,6 +78,6 @@ COMMENT ON COLUMN api_buk_chile.employees.id IS 'Primary Key con ID único del e
 COMMENT ON COLUMN api_buk_chile.employees.rut IS 'RUT del empleado (formato chileno)';
 COMMENT ON COLUMN api_buk_chile.employees.custom_attributes IS 'Atributos personalizados en formato JSON';
 COMMENT ON COLUMN api_buk_chile.employees.current_job IS 'Información del trabajo actual en formato JSON';
-COMMENT ON COLUMN api_buk_chile.employees.jobs IS 'Historial de trabajos';
-COMMENT ON COLUMN api_buk_chile.employees.family_responsabilities IS 'Responsabilidades familiares';
+COMMENT ON COLUMN api_buk_chile.employees.jobs IS 'Historial de trabajos en formato JSON';
+COMMENT ON COLUMN api_buk_chile.employees.family_responsabilities IS 'Responsabilidades familiares en formato JSON';
 COMMENT ON COLUMN api_buk_chile.employees.timestamp_nifi IS 'Marca de tiempo que indica cuándo fue procesado el registro por Apache NiFi';

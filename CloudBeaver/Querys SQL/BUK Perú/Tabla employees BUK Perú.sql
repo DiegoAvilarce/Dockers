@@ -61,8 +61,8 @@ CREATE TABLE api_buk_peru.employees (
     -- Campos complejos como JSONB
     custom_attributes JSONB,
     current_job JSONB,
-    jobs TEXT,
-    family_responsabilities TEXT,
+    jobs JSONB, --- en un UpdateRecord de NiFi ponemos /jobs con valor escapeJson(/jobs[0])
+    family_responsabilities JSONB, --escapeJson(/family_responsabilities[0])
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id)
 );

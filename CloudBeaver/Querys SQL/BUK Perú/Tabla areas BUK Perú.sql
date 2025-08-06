@@ -4,7 +4,7 @@ CREATE TABLE api_buk_peru.areas (
     address TEXT,
     status TEXT,
     provincia TEXT,
-    children_area TEXT,
+    children_area JSONB, -- escapeJson(/children_area[0])
     cost_center TEXT,
     department JSONB,
     custom_attributes JSONB,
@@ -20,7 +20,7 @@ COMMENT ON COLUMN api_buk_peru.areas.name IS 'Nombre del área';
 COMMENT ON COLUMN api_buk_peru.areas.address IS 'Dirección del área';
 COMMENT ON COLUMN api_buk_peru.areas.status IS 'Estado del área (active/inactive)';
 COMMENT ON COLUMN api_buk_peru.areas.provincia IS 'Provincia del área';
-COMMENT ON COLUMN api_buk_peru.areas.children_area IS 'Áreas hijas en formato TEXT';
+COMMENT ON COLUMN api_buk_peru.areas.children_area IS 'Áreas hijas en formato JSON';
 COMMENT ON COLUMN api_buk_peru.areas.cost_center IS 'Código del centro de costos';
 COMMENT ON COLUMN api_buk_peru.areas.department IS 'Información del departamento y división en formato JSON';
 COMMENT ON COLUMN api_buk_peru.areas.custom_attributes IS 'Atributos personalizados en formato JSON';

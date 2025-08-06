@@ -53,6 +53,7 @@ CREATE TABLE api_bsale_syf.documents (
     details                JSONB,
     sellers                JSONB,
     attributes             JSONB,
+    payments               JSONB,
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id)
 );

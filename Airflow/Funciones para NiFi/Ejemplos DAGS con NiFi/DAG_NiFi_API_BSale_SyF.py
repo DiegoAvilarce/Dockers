@@ -85,6 +85,8 @@ processor_initial_details = 'a55a6bb4-a05c-3987-1d33-2245cc82efec'
 processor_initial_product_types = 'f149e771-8b4c-3f62-820b-d8fcd98fb4a7'
 processor_initial_document_types = 'c6e6277d-3f1a-33af-194d-965385dcf53c'
 processor_initial_checkout = 'f0af85bc-3e45-37e4-5ba9-8323c26c4c81'
+processor_initial_payments = '6339e923-171c-374c-1d7b-8be57f7f42e0'
+processor_initial_payment_types = 'ae5fd761-358f-3b8a-3985-92f057d53255'
 
 processor_loop_invoke_documents = 'ec8f7b55-3fa5-3ed6-3505-adc6cf0541df'
 processor_loop_invoke_clients = '85f46549-09f5-3d0d-2e79-86955949db39'
@@ -93,6 +95,8 @@ processor_loop_invoke_products= 'b47ce041-5ca7-391d-d5a8-aad17660f36f'
 processor_loop_invoke_product_types = 'a3fcad05-8e1d-3d08-be00-9b7b66f205d9'
 processor_loop_invoke_document_types = 'b9731018-522e-38c7-291c-5a98242724a6'
 processor_loop_invoke_checkout = 'ce830924-d09e-38b6-6bea-b694af3863b8'
+processor_loop_invoke_payments = 'b1165c4d-d899-3d07-f3a6-f46d4424312a'
+processor_loop_invoke_payment_types = '1098d883-b064-343b-6cc5-abfa358870f7'
 
 count_split_documents = 'bc2c96a5-9ae0-320a-834e-2933cc80d3bb'
 count_upserts_documents = '3128fd8a-53b8-34a1-9039-ba4d61b7bf36'
@@ -117,6 +121,12 @@ count_upserts_document_types = '55b07a17-c23d-3de5-b722-031a765c537d'
 
 count_split_checkout = '7a8b2e27-4a04-33d2-adba-2994fbf109dd'
 count_upserts_checkout = 'ba79699b-4f78-388a-9f52-065f3699792d'
+
+count_split_payments = 'ac1e1a4b-e368-37ee-a66d-6eda6cb06fc8'
+count_upserts_payments = 'f7bd744f-df55-3568-a3a1-c7960e63f03f'
+
+count_split_payment_types = 'bb0ee34c-6171-3cbc-b1fc-e684532feb26'
+count_upserts_payment_types = 'b75cf2ef-60fd-3932-b0cd-d281514c524e'
 
 # Definir funciones Python
 
@@ -498,7 +508,9 @@ with DAG(dag_id = DAG_ID,
                 {'id_processor': processor_loop_invoke_products, 'name_variable': 'no_has_next', 'name': 'Products Loop Invoke'},
                 {'id_processor': processor_loop_invoke_product_types, 'name_variable': 'no_has_next', 'name': 'Product Types Loop Invoke'},
                 {'id_processor': processor_loop_invoke_document_types, 'name_variable': 'no_has_next', 'name': 'Document Types Loop Invoke'},
-                {'id_processor': processor_loop_invoke_checkout, 'name_variable': 'no_has_next', 'name': 'Checkout Loop Invoke'}
+                {'id_processor': processor_loop_invoke_checkout, 'name_variable': 'no_has_next', 'name': 'Checkout Loop Invoke'},
+                {'id_processor': processor_loop_invoke_payments, 'name_variable': 'no_has_next', 'name': 'Payments Loop Invoke'},
+                {'id_processor': processor_loop_invoke_payment_types, 'name_variable': 'no_has_next', 'name': 'Payment Types Loop Invoke'}
                 ]
             },execution_timeout=timedelta(minutes=10))
         
@@ -520,7 +532,11 @@ with DAG(dag_id = DAG_ID,
                 (count_split_document_types, 'count_split_document_types'),
                 (count_upserts_document_types, 'count_upserts_document_types'),
                 (count_split_checkout, 'count_split_checkout'),
-                (count_upserts_checkout, 'count_upserts_checkout')
+                (count_upserts_checkout, 'count_upserts_checkout'),
+                (count_split_payments, 'count_split_payments'),
+                (count_upserts_payments, 'count_upserts_payments'),
+                (count_split_payment_types, 'count_split_payment_types'),
+                (count_upserts_payment_types, 'count_upserts_payment_types')
                 ]
                 },execution_timeout=timedelta(minutes=10))
 
@@ -534,7 +550,9 @@ with DAG(dag_id = DAG_ID,
                 (processor_initial_products, 'Initial Products Processor'),
                 (processor_initial_product_types, 'Initial Product Types Processor'),
                 (processor_initial_document_types, 'Initial Document Types Processor'),
-                (processor_initial_checkout, 'Initial Checkout Processor')
+                (processor_initial_checkout, 'Initial Checkout Processor'),
+                (processor_initial_payments, 'Initial Payments Processor'),
+                (processor_initial_payment_types, 'Initial Payment Types Processor')
                 ]
             },execution_timeout=timedelta(minutes=10))
         
@@ -548,7 +566,9 @@ with DAG(dag_id = DAG_ID,
                 {'id_processor': processor_loop_invoke_products, 'name_variable': 'no_has_next', 'name': 'Products Loop Invoke'},
                 {'id_processor': processor_loop_invoke_product_types, 'name_variable': 'no_has_next', 'name': 'Product Types Loop Invoke'},
                 {'id_processor': processor_loop_invoke_document_types, 'name_variable': 'no_has_next', 'name': 'Document Types Loop Invoke'},
-                {'id_processor': processor_loop_invoke_checkout, 'name_variable': 'no_has_next', 'name': 'Checkout Loop Invoke'}
+                {'id_processor': processor_loop_invoke_checkout, 'name_variable': 'no_has_next', 'name': 'Checkout Loop Invoke'},
+                {'id_processor': processor_loop_invoke_payments, 'name_variable': 'no_has_next', 'name': 'Payments Loop Invoke'},
+                {'id_processor': processor_loop_invoke_payment_types, 'name_variable': 'no_has_next', 'name': 'Payment Types Loop Invoke'}
                 ]
             },execution_timeout=timedelta(minutes=10))
         
@@ -559,7 +579,9 @@ with DAG(dag_id = DAG_ID,
                 {'id_counter1': count_split_products,'id_counter2': count_upserts_products,'pair_name': 'Products'},
                 {'id_counter1': count_split_product_types,'id_counter2': count_upserts_product_types,'pair_name': 'Product Types'},
                 {'id_counter1': count_split_document_types,'id_counter2': count_upserts_document_types,'pair_name': 'Document Types'},
-                {'id_counter1': count_split_checkout,'id_counter2': count_upserts_checkout,'pair_name': 'Checkout'}
+                {'id_counter1': count_split_checkout,'id_counter2': count_upserts_checkout,'pair_name': 'Checkout'},
+                {'id_counter1': count_split_payments,'id_counter2': count_upserts_payments,'pair_name': 'Payments'},
+                {'id_counter1': count_split_payment_types,'id_counter2': count_upserts_payment_types,'pair_name': 'Payment Types'}
                 ]
             },
             execution_timeout=timedelta(minutes=10))

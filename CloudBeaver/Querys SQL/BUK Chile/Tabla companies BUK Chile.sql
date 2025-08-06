@@ -7,9 +7,9 @@ CREATE TABLE api_buk_chile.companies (
     company_email TEXT,
     company_business TEXT,
     rut TEXT,
-    legal_agents TEXT,
+    legal_agents JSONB, -- escapeJson(/legal_agents[0])
     custom_attributes JSONB,
-    company_banks TEXT,
+    company_banks JSONB, --escapeJson(/company_banks[0])
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id)
 );

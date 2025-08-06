@@ -7,9 +7,9 @@ CREATE TABLE api_buk_peru.companies (
     company_email TEXT,
     company_business TEXT,
     ruc TEXT,
-    legal_agents TEXT,
+    legal_agents JSONB,
     custom_attributes JSONB,
-    company_banks TEXT,
+    company_banks JSONB,
     timestamp_nifi TIMESTAMPTZ,
     PRIMARY KEY (id)
 );

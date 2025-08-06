@@ -4,9 +4,9 @@ CREATE TABLE api_buk_chile.areas (
     address TEXT,
     status TEXT,
     city TEXT,
-    children_area TEXT,
+    children_area JSONB, -- escapeJson(/children_area[0])
     cost_center TEXT,
-    department JSONB,
+    department JSONB, 
     custom_attributes JSONB,
     parent_area JSONB,
     timestamp_nifi TIMESTAMPTZ,
@@ -20,7 +20,7 @@ COMMENT ON COLUMN api_buk_chile.areas.name IS 'Nombre del área';
 COMMENT ON COLUMN api_buk_chile.areas.address IS 'Dirección del área';
 COMMENT ON COLUMN api_buk_chile.areas.status IS 'Estado del área (active/inactive)';
 COMMENT ON COLUMN api_buk_chile.areas.city IS 'Ciudad donde se ubica el área';
-COMMENT ON COLUMN api_buk_chile.areas.children_area IS 'Áreas hijas en formato TEXT';
+COMMENT ON COLUMN api_buk_chile.areas.children_area IS 'Áreas hijas en formato JSON';
 COMMENT ON COLUMN api_buk_chile.areas.cost_center IS 'Código del centro de costos';
 COMMENT ON COLUMN api_buk_chile.areas.department IS 'Información del departamento y división en formato JSON';
 COMMENT ON COLUMN api_buk_chile.areas.custom_attributes IS 'Atributos personalizados en formato JSON';
