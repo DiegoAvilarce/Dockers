@@ -1,0 +1,21 @@
+CREATE TABLE api_freshdesk_regulaciones.ticket_fields (
+  id BIGINT,
+  name VARCHAR(255),
+  label VARCHAR(255),
+  description TEXT,
+  position INT,
+  required_for_closure BOOLEAN,
+  required_for_agents BOOLEAN,
+  type VARCHAR(50),
+  default_ BOOLEAN,
+  customers_can_edit BOOLEAN,
+  customers_can_filter BOOLEAN,
+  label_for_customers VARCHAR(255),
+  required_for_customers BOOLEAN,
+  displayed_to_customers BOOLEAN,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  choices TEXT,
+  timestamp_nifi TIMESTAMPTZ,
+  PRIMARY KEY (id)
+);
