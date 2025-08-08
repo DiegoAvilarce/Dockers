@@ -1,0 +1,58 @@
+services:
+  netdata:
+    image: netdata/netdata:latest
+    container_name: netdata
+    hostname: netdata  # Nombre que aparecerá en el dashboard
+    ports:
+      - "19999:19999"
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      # Configuración persistente
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      
+      # Acceso de solo lectura al sistema host
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/log:/host/var/log:ro
+      
+      # Para monitorear Docker
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      
+      # Para información de discos
+      - /:/rootfs:ro
+    
+    environment:
+      # Configuraciones opcionales
+      - NETDATA_CLAIM_TOKEN=    # Déjalo vacío si no usas Netdata Cloud
+      - NETDATA_CLAIM_URL=      # Déjalo vacío si no usas Netdata Cloud
+      - NETDATA_CLAIM_ROOMS=    # Déjalo vacío si no usas Netdata Cloud
+      
+      # Configuraciones del contenedor
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - PGID=984  # ID del grupo docker para tu sistema
+
+# Volúmenes nombrados para persistencia
+volumes:
+  netdataconfig:
+    driver: local
+  netdatalib:
+    driver: local  
+  netdatacache:
+    driver: local
+
+# Opcional: configurar red personalizada
+networks:
+  default:
+    name: netdata_network
