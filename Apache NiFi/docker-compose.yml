@@ -21,6 +21,8 @@ services:
     volumes:
       # Drivers JDBC personalizados (RUTA CORREGIDA)
       - ./nifi/jdbc:/opt/nifi/nifi/jdbc
+      # Ruta para guardar procesadores personalizados (NARs)
+      - ./nifi/nars:/opt/nifi/nifi-current/nar_extensions
       
       # Carpeta para archivos de entrada
       - ./nifi/input:/opt/nifi/input

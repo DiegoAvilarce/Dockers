@@ -1,0 +1,1 @@
+sudo mv "/home/qsenseadmin/Downloads/nifi-snowflake-services-api-nar-2.5.0.nar" "/home/qsenseadmin/Dockers/Apache NiFi/nifi/nars/" 
