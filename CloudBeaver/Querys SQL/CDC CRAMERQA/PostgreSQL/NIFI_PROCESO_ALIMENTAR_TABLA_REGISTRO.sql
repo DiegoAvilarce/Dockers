@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION LANDING_CRAMERQA.NIFI_PROCESO_ALIMENTAR_TABLA(
+CREATE OR REPLACE FUNCTION LANDING_CRAMERQA.NIFI_PROCESO_ALIMENTAR_TABLA_REGISTRO(
     json_data JSONB,
     target_table TEXT,  -- nombre de la tabla destino
     excluded_fields TEXT[] DEFAULT ARRAY['op', 'tipo', 'ts_ms', 'kafka_offset', 'uuid_nifi']::TEXT[]
