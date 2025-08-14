@@ -101,7 +101,7 @@ BEGIN
                 after_data_original := jsonb_set(
                     after_data_original,
                     ARRAY[field],
-                    to_jsonb(to_timestamp((after_data_original->>field)::bigint / 1000))
+                    to_jsonb(to_timestamp((after_data_original->>field)::bigint::double precision / 1000))
                 );
             EXCEPTION WHEN others THEN
                 -- Ignorar si no es numérico
@@ -113,7 +113,7 @@ BEGIN
                 before_data_original := jsonb_set(
                     before_data_original,
                     ARRAY[field],
-                    to_jsonb(to_timestamp((before_data_original->>field)::bigint / 1000))
+                    to_jsonb(to_timestamp((before_data_original->>field)::bigint::double precision / 1000))
                 );
             EXCEPTION WHEN others THEN
                 -- Ignorar si no es numérico
@@ -189,15 +189,30 @@ BEGIN
 
         WHEN 'd' THEN
             -- DELETE dinámico
-            WITH where_parts AS (
-                SELECT string_agg(format('%I = %L', key, value), ' AND ') AS wheres
-                FROM jsonb_each_text(before_data_filtered)
-            )
-            SELECT format('DELETE FROM %s WHERE %s', target_table, wheres)
-            INTO sql_stmt
-            FROM where_parts;
-
-            EXECUTE sql_stmt;
+            DECLARE
+                where_clause TEXT := '';
+                key TEXT;
+                value JSONB;
+            BEGIN
+                -- Construir WHERE clause
+                FOR key, value IN SELECT * FROM jsonb_each(before_data_filtered) LOOP
+                    IF where_clause != '' THEN
+                        where_clause := where_clause || ' AND ';
+                    END IF;
+                    
+                    IF value = 'null'::jsonb THEN
+                        where_clause := where_clause || format('%I IS NULL', key);
+                    ELSE
+                        where_clause := where_clause || format('%I = %L', key, value #>> '{}');
+                    END IF;
+                END LOOP;
+                
+                sql_stmt := format('DELETE FROM %s WHERE %s', target_table, where_clause);
+                
+                RAISE NOTICE 'DELETE SQL: %', sql_stmt;
+                
+                EXECUTE sql_stmt;
+            END;
     END CASE;
 
 END;
