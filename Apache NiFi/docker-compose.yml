@@ -1,6 +1,6 @@
 services:
   nifi:
-    image: apache/nifi:latest
+    image: apache/nifi:2.5.0
     container_name: nifi
     restart: on-failure
     ports:
@@ -17,7 +17,6 @@ services:
       # Configuración de timezone
       - TZ=America/Santiago
       
-      
     volumes:
       # Drivers JDBC personalizados (RUTA CORREGIDA)
       - ./nifi/jdbc:/opt/nifi/nifi/jdbc
@@ -26,6 +25,8 @@ services:
       
       # Carpeta para archivos de entrada
       - ./nifi/input:/opt/nifi/input
+      # Carpeta para ejecutables
+      - ./nifi/ejecutables:/opt/nifi/ejecutables
       
       # Carpeta para archivos de salida (NUEVA - para PutFile)
       - ./nifi/output:/opt/nifi/output

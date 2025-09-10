@@ -1,0 +1,11 @@
+docker exec -it --user root ca02accd20be bash # aqui va el id del contenedor
+
+# Actualizar paquetes e instalar pip
+apt-get update
+apt-get install -y python3-pip
+
+# Instalar los paquetes
+pip3 install --break-system-packages requests pandas python-dotenv snowflake-connector-python==3.17.2
+
+# Volver al usuario nifi
+su nifi
