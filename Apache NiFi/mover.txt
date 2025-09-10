@@ -1,1 +1,26 @@
-sudo mv "/home/qsenseadmin/Downloads/nifi-snowflake-services-api-nar-2.5.0.nar" "/home/qsenseadmin/Dockers/Apache NiFi/nifi/nars/" 
+sudo mv "/home/qsenseadmin/Ejecutables/API WMS Cramer Peru" "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables"
+
+sudo cp -r "/home/qsenseadmin/Ejecutables/API WMS Cramer Peru" "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables"
+
+
+
+# para ver volumens mas ocupados
+sudo find /var/lib/docker/volumes -maxdepth 2 -type d -name "_data" -exec du -sh {} \; | sort -hr | head -20
+
+
+
+# para dar permiso de ejecutar solo para pruebas
+chmod +x "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables/API WMS Cramer Peru/Script/stock_api_wms_peru.py"
+
+
+# para dar permisos para editer
+sudo chown qsenseadmin:qsenseadmin "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables"
+
+# para otorgar nuevamente los permisos para que nifi ejecute
+chmod -R 777 "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables/API WMS Cramer Peru/Outputs/"
+
+# mejor permiso para todo
+
+# Configurar grupo y propietario para que ambos funcionen
+sudo chown -R qsenseadmin:docker "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables/"
+chmod -R 777 "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables/"
