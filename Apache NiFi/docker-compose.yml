@@ -16,6 +16,12 @@ services:
       - NIFI_SECURITY_ALLOW_ANONYMOUS_AUTHENTICATION=false
       # Configuración de timezone
       - TZ=America/Santiago
+      # NUEVAS CONFIGURACIONES DE THREAD POOL
+      #- NIFI_ENGINE_THREAD_POOL_SIZE=${NIFI_ENGINE_THREAD_POOL_SIZE:-18}
+      #- NIFI_ENGINE_EVENT_DRIVEN_THREAD_POOL_SIZE=${NIFI_ENGINE_EVENT_DRIVEN_THREAD_POOL_SIZE:-12}
+      # Memoria JVM
+      - NIFI_JVM_HEAP_INIT=6g
+      - NIFI_JVM_HEAP_MAX=8g
       
     volumes:
       # Drivers JDBC personalizados (RUTA CORREGIDA)
