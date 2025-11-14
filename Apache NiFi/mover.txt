@@ -1,6 +1,10 @@
 sudo mv "/home/qsenseadmin/Ejecutables/API WMS Cramer Peru" "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables"
 
+
 sudo cp -r "/home/qsenseadmin/Ejecutables/API WMS Cramer Peru" "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables"
+
+
+sudo mv "/home/qsenseadmin/Downloads/sqlite-jdbc-3.50.3.0.jar" "/home/qsenseadmin/Dockers/Apache NiFi/nifi/jdbc"
 
 
 
@@ -23,4 +27,21 @@ chmod -R 777 "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables/API WMS Cra
 
 # Configurar grupo y propietario para que ambos funcionen
 sudo chown -R qsenseadmin:docker "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables/"
+chmod -R 777 "/home/qsenseadmin/Dockers/Apache NiFi/nifi/input/"
+
+
+# para crear carpeta y luego volver todo a la normalidad
+sudo chown -R qsenseadmin:docker "/home/qsenseadmin/Dockers/Apache NiFi/nifi/input/"
 chmod -R 777 "/home/qsenseadmin/Dockers/Apache NiFi/nifi/ejecutables/"
+
+sudo chown -R 1000:1000 "/home/qsenseadmin/Dockers/Apache NiFi/nifi/input/"
+
+# para instalar jar de sqlite directo en docjer para que tome los groovy
+# Si NiFi está en Docker
+docker cp sqlite-jdbc-3.50.3.0.jar nifi:/opt/nifi/nifi-current/lib/
+
+
+# para poner pair-key correctamente dentro del opt de nifi hacer estos 3 comandos
+sudo chown 1000:1000 "/home/qsenseadmin/Downloads/user_nifi_rsa_key.p8"
+sudo chmod 600 "/home/qsenseadmin/Downloads/user_nifi_rsa_key.p8"
+sudo mv "/home/qsenseadmin/Downloads/user_nifi_rsa_key.p8" "/home/qsenseadmin/Dockers/Apache NiFi/nifi/input/"
